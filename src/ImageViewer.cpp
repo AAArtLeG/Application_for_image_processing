@@ -112,3 +112,26 @@ void ImageViewer::on_actionExit_triggered()
 {
 	this->close();
 }
+
+void ImageViewer::on_pushButtonFSHS_clicked() {
+	std::cout << "click" << std::endl;
+
+	std::cout << "images size = " << images.size() << "\n";
+	if (images.isEmpty()) return;
+	std::cout << "img w/h = " << images[0].getWidth() << " " << images[0].getHeight() << "\n";
+
+	std::vector<double>& channel0 = images[0].getData(0);
+	std::cout << "before: " << channel0[0] << " " << channel0[1] << " " << channel0[2] << "\n";
+
+	images[0].fshs(256);
+
+	std::cout << "after:  " << channel0[0] << " " << channel0[1] << " " << channel0[2] << "\n";
+
+	vW->setImage(images[0].toQImageGray());
+
+	std::cout << "images size = " << images.size() << "\n";
+	if (images.isEmpty()) return;
+	std::cout << "img w/h = " << images[0].getWidth() << " " << images[0].getHeight() << "\n";
+
+	std::cout << "clicked" << std::endl;
+}
