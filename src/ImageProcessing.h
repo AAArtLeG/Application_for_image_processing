@@ -9,6 +9,8 @@
 
 bool saveToPgm(const std::string& filename, int width, int height, const std::vector<double>& data);
 
+
+
 class ImageData {
 private:
 	int width = 0;
@@ -17,6 +19,7 @@ private:
 	std::vector<std::vector<double>> data = std::vector<std::vector<double>>{};
 
 	void findMinMax(std::vector<double>& arr, double& min, double& max);
+	std::vector<std::vector<double>> mirroring(std::vector<double>& arr);
 public:
 
 	ImageData() {};
@@ -31,6 +34,8 @@ public:
 
 	void fshs(int L = 256);
 	QImage toQImageGray();
+
+	void convolution();
 };
 class ImageProcessing {
 public:

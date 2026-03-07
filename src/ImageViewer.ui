@@ -86,6 +86,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButtonCon">
+       <property name="text">
+        <string>CON</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Orientation::Vertical</enum>

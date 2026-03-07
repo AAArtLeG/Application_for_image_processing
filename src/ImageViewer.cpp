@@ -135,3 +135,7 @@ void ImageViewer::on_pushButtonFSHS_clicked() {
 
 	std::cout << "clicked" << std::endl;
 }
+
+void ImageViewer::on_pushButtonCon_clicked() {
+	images[0].convolution();
+}

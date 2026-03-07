@@ -94,6 +94,123 @@ QImage ImageData::toQImageGray()
 	return out;
 }
 
+
+vector<vector<double>> ImageData::mirroring(vector<double>& arr) {
+	vector<vector<double>> mat(height, vector<double>(width));
+
+	const vector<double>& ch0 = data[0];
+
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			const int index = y * width + x;
+			mat[y][x] = ch0[index];
+		}
+	}
+
+	int hN = height + 4;
+	int wN = width + 4;
+
+	//cout << height << " " << width << endl;
+
+	vector<vector<double>> matResized(hN, vector<double>(wN));
+
+	for (int i = 0; i < hN; i++) {
+		for (int j = 0; j < wN; j++) {
+			matResized[i][j] = -1;
+		}
+	}
+
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (i == 0) {
+				matResized[i][j + 2] = mat[i + 1][j];
+				matResized[i + 1][j + 2] = mat[i][j];
+			}
+			if (j == 0) {
+				matResized[i + 2][j] = mat[i][j + 1];
+				matResized[i + 2][j + 1] = mat[i][j];
+			}
+			if (i == (height - 1)) {
+				matResized[i + 3][j + 2] = mat[i][j];
+				matResized[i + 4][j + 2] = mat[i - 1][j];
+
+			}
+			if (j == (width - 1)) {
+				matResized[i + 2][j + 4] = mat[i][j];
+				matResized[i + 2][j + 3] = mat[i][j-1];
+			}
+
+
+			matResized[i + 2][j + 2] = mat[i][j];
+				
+		}
+	}
+
+	matResized[0][0] = matResized[1][2];
+	matResized[0][1] = matResized[0][2];
+	matResized[1][0] = matResized[2][0];
+	matResized[1][1] = matResized[1][2];
+
+	matResized[0][wN - 2] = matResized[0][wN - 3];
+	matResized[0][wN - 1] = matResized[1][wN - 3];
+	matResized[1][wN - 2] = matResized[1][wN - 3];
+	matResized[1][wN - 1] = matResized[2][wN - 1];
+
+	matResized[hN - 2][0] = matResized[hN - 3][0];
+	matResized[hN - 2][1] = matResized[hN - 3][1];
+	matResized[hN - 1][0] = matResized[hN - 3][1];
+	matResized[hN - 1][1] = matResized[hN - 1][2];
+
+	matResized[hN - 2][wN - 2] = matResized[hN - 3][wN - 2];
+	matResized[hN - 2][wN - 1] = matResized[hN- 3][wN - 1];
+	matResized[hN - 1][wN - 2] = matResized[hN - 1][wN - 3];
+	matResized[hN - 1][wN - 1] = matResized[hN - 3][wN - 2];
+
+	
+	for (int i = 0; i < 32; i++) {
+		cout << -1 << " " << -1 << " ";
+		for (int j = 0; j < 32; j++) {
+			cout << mat[i][j] << " ";
+		}
+		cout << endl;
+	}
+
+	cout << endl;
+	cout << endl;
+
+	for (int i = 0; i < 32; i++) {
+		for (int j = 0; j < 32; j++) {
+			cout << matResized[i][j] << " ";
+
+		}
+		cout << endl;
+	}
+
+	/*int counter = 0;
+	for (int i = 0; i < 1; i++) {
+		for (int j = 0; j < height; j++) {
+			if (i == 0) {
+				if ()
+			}
+		}
+		cout << endl;
+	}*/
+
+	/*for (int i = 0; i < height; i++) {
+	  for (int j = 0; j < width; j++) {
+
+	  }
+	}*/
+
+	return matResized;
+}
+
+void ImageData::convolution() {
+	vector<vector<double>> resized = mirroring(data[0]);
+
+
+}
+
 bool saveToPgm(const std::string& filename, int width, int height, const std::vector<double>& data)
 {
 	std::ofstream f(filename);
