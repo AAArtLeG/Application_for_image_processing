@@ -208,7 +208,60 @@ vector<vector<double>> ImageData::mirroring(vector<double>& arr) {
 void ImageData::convolution() {
 	vector<vector<double>> resized = mirroring(data[0]);
 
+	int hN = height + 4;
+	int wN = width + 4;
 
+	vector<vector<double>> final(height, vector<double>(width));
+
+
+	double sum = 0.0;
+	for (int k = 0; k < height; k++) {
+		for (int l = 0; l < width; l++) {
+			sum = 0.0;
+			for (int i = 0; i < 5; i++) {
+				for (int j = 0; j < 5; j++) {
+					sum += kernel[i][j]*resized[k + i][l + j];
+				}
+			}
+
+			final[k][l] = sum;
+		}
+	}
+
+	/*double sum = 0.0;
+	for (int k = 0; k < height; k++) {
+		for (int l = 0; l < width; l++) {
+			sum = 0.0;
+			for (int m = -2; m < 3; m++) {
+				for (int n = -2; n < 3; n++) {
+					int i = k - m;
+					int j = l - n;
+					sum += kernel[m + 2][n + 2] * resized[i + 2][j + 2];
+				}
+			}
+
+			final[k][l] = sum;
+		}
+	}*/
+
+	vector<vector<double>> finalPgm(height, vector<double>(width));
+
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			finalPgm[i][j] = static_cast<int>(final[i][j] * 255.0);
+		}
+	}
+
+	vector<double> finalPgm1D(height * width);
+
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			const int index = y * width + x;
+			finalPgm1D[index] = finalPgm[y][x];
+		}
+	}
+
+	data[0] = finalPgm1D;
 }
 
 bool saveToPgm(const std::string& filename, int width, int height, const std::vector<double>& data)

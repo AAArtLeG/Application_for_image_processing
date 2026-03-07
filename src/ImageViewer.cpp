@@ -138,4 +138,6 @@ void ImageViewer::on_pushButtonFSHS_clicked() {
 
 void ImageViewer::on_pushButtonCon_clicked() {
 	images[0].convolution();
+
+	vW->setImage(images[0].toQImageGray());
 }

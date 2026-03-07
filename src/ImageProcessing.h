@@ -9,14 +9,19 @@
 
 bool saveToPgm(const std::string& filename, int width, int height, const std::vector<double>& data);
 
-
-
 class ImageData {
 private:
 	int width = 0;
 	int height = 0;
 	long size = 0;
 	std::vector<std::vector<double>> data = std::vector<std::vector<double>>{};
+	double kernel[5][5] = {
+		{0.001951161393699, 0.010659081074241, 0.018722276705751, 0.010659081074241, 0.001951161393699},
+		{0.010659081074241, 0.058229939211677, 0.102278707412656, 0.058229939211677, 0.010659081074241},
+		{0.018722276705751, 0.102278707412656, 0.189999012510939, 0.102278707412656, 0.018722276705751},
+		{0.010659081074241, 0.058229939211677, 0.102278707412656, 0.058229939211677, 0.010659081074241},
+		{0.001951161393699, 0.010659081074241, 0.018722276705751, 0.010659081074241, 0.001951161393699}
+	};
 
 	void findMinMax(std::vector<double>& arr, double& min, double& max);
 	std::vector<std::vector<double>> mirroring(std::vector<double>& arr);
