@@ -29,10 +29,13 @@ private:
 	bool openImage(QString filename);
 	bool saveImage(QString filename);
 
+	ImageProcessing ip;
+
 private slots:
 	void on_actionOpen_triggered();
 	void on_actionSave_as_triggered();
 	void on_actionExit_triggered();
 	void on_pushButtonFSHS_clicked(); 
-	void on_pushButtonCon_clicked();
+	void on_pushButtonCon_clicked(); 
+	void on_pushButtonLinDif_clicked();
 };

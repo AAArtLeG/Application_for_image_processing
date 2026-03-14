@@ -41,9 +41,16 @@ public:
 	QImage toQImageGray();
 
 	void convolution();
+
+	std::vector<std::vector<double>> to2D(std::vector<double>& arr);
 };
+
 class ImageProcessing {
+private:
+	std::vector<ImageData> tempForLinDif;
 public:
 	ImageProcessing() {};
 	~ImageProcessing() {};
+
+	void linDiffusionExplicite(ImageData& im, int N);
 };

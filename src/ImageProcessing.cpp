@@ -94,6 +94,11 @@ QImage ImageData::toQImageGray()
 	return out;
 }
 
+vector<vector<double>> to2D(std::vector<double>& arr) {
+	vector<vector<double>> mat;
+	
+	return mat;
+}
 
 vector<vector<double>> ImageData::mirroring(vector<double>& arr) {
 	vector<vector<double>> mat(height, vector<double>(width));
@@ -262,6 +267,31 @@ void ImageData::convolution() {
 	}
 
 	data[0] = finalPgm1D;
+}
+
+void ImageProcessing::linDiffusionExplicite(ImageData& im, int N) {
+	vector<vector<double>> dataOrigin = im.getData();
+	vector<vector<double>> dataNew = im.getData();
+	int channelSize = dataOrigin.size();
+
+	//cout << channelData << endl;
+
+	vector<double> channel;
+	vector<double> prev;
+
+	double tau = 0.5;
+
+	int h = 1;
+
+	for (int c = 0; c < channelSize; c++) {
+		channel = dataOrigin[c];
+
+		prev = channel;
+		for (int n = 0; n < N; n++) {
+
+		}
+
+	}
 }
 
 bool saveToPgm(const std::string& filename, int width, int height, const std::vector<double>& data)
