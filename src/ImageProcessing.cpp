@@ -94,23 +94,23 @@ QImage ImageData::toQImageGray()
 	return out;
 }
 
-vector<vector<double>> to2D(std::vector<double>& arr) {
-	vector<vector<double>> mat;
-	
-	return mat;
-}
-
-vector<vector<double>> ImageData::mirroring(vector<double>& arr) {
+vector<vector<double>> ImageData::to2D(int height, int width, vector<double>& arr) {
 	vector<vector<double>> mat(height, vector<double>(width));
-
-	const vector<double>& ch0 = data[0];
 
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
 			const int index = y * width + x;
-			mat[y][x] = ch0[index];
+			mat[y][x] = arr[index];
 		}
 	}
+
+	return mat;
+}
+
+vector<vector<double>> ImageData::mirroring(vector<double>& arr) {
+	vector<double>& ch0 = data[0];
+
+	vector<vector<double>> mat = to2D(height, width, ch0);
 
 	int hN = height + 4;
 	int wN = width + 4;
