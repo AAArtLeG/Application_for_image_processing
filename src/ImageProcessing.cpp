@@ -107,6 +107,20 @@ vector<vector<double>> ImageData::to2D(int height, int width, vector<double>& ar
 	return mat;
 }
 
+vector<double> ImageData::to1D(int height, int width, vector<vector<double>>& arr) {
+
+	vector<double> mat(height * width);
+
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			const int index = y * width + x;
+			mat[index] = arr[y][x];
+		}
+	}
+
+	return mat;
+}
+
 vector<vector<double>> ImageData::mirroring(vector<double>& arr) {
 	vector<double>& ch0 = data[0];
 
@@ -257,14 +271,7 @@ void ImageData::convolution() {
 		}
 	}
 
-	vector<double> finalPgm1D(height * width);
-
-	for (int y = 0; y < height; ++y) {
-		for (int x = 0; x < width; ++x) {
-			const int index = y * width + x;
-			finalPgm1D[index] = finalPgm[y][x];
-		}
-	}
+	vector<double> finalPgm1D = to1D(height, width, finalPgm);
 
 	data[0] = finalPgm1D;
 }

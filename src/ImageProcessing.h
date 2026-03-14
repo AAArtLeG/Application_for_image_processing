@@ -43,6 +43,8 @@ public:
 	void convolution();
 
 	std::vector<std::vector<double>> to2D(int height, int width, std::vector<double>& arr);
+
+	std::vector<double> to1D(int height, int width, std::vector<std::vector<double>>& arr);
 };
 
 class ImageProcessing {
