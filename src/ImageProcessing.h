@@ -36,6 +36,8 @@ public:
 	int getHeight() { return height; }
 	std::vector<std::vector<double>>& getData() { return data; }
 	std::vector<double>& getData(int channelId) { return data[channelId]; }
+	void setData(std::vector<std::vector<double>>& d) { data = d; }
+	void getData(int channelId, std::vector<double>& c) { data[channelId] = c; }
 
 	void fshs(int L = 256);
 	QImage toQImageGray();
@@ -43,13 +45,13 @@ public:
 	void convolution();
 
 	std::vector<std::vector<double>> to2D(int height, int width, std::vector<double>& arr);
-
 	std::vector<double> to1D(int height, int width, std::vector<std::vector<double>>& arr);
+	std::vector<std::vector<double>> to255(int height, int width, std::vector<std::vector<double>>& arr);
 };
 
 class ImageProcessing {
 private:
-	std::vector<ImageData> tempForLinDif;
+	std::vector<std::vector<ImageData>> tempForLinDif;
 public:
 	ImageProcessing() {};
 	~ImageProcessing() {};

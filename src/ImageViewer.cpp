@@ -143,5 +143,6 @@ void ImageViewer::on_pushButtonCon_clicked() {
 }
 
 void ImageViewer::on_pushButtonLinDif_clicked() {
-	ip.linDiffusionExplicite(images[0], 10);
+	ip.linDiffusionExplicite(images[0], 100);
+	vW->setImage(images[0].toQImageGray());
 }

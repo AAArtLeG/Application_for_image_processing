@@ -121,6 +121,18 @@ vector<double> ImageData::to1D(int height, int width, vector<vector<double>>& ar
 	return mat;
 }
 
+vector<vector<double>> ImageData::to255(int height, int width, vector<vector<double>>& arr) {
+	vector<vector<double>> mat(height, vector<double>(width));
+
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			mat[i][j] = static_cast<int>(arr[i][j] * 255.0);
+		}
+	}
+
+	return mat;
+}
+
 vector<vector<double>> ImageData::mirroring(vector<double>& arr) {
 	vector<double>& ch0 = data[0];
 
@@ -263,13 +275,7 @@ void ImageData::convolution() {
 		}
 	}*/
 
-	vector<vector<double>> finalPgm(height, vector<double>(width));
-
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			finalPgm[i][j] = static_cast<int>(final[i][j] * 255.0);
-		}
-	}
+	vector<vector<double>> finalPgm = to255(height, width, final);
 
 	vector<double> finalPgm1D = to1D(height, width, finalPgm);
 
@@ -280,25 +286,110 @@ void ImageProcessing::linDiffusionExplicite(ImageData& im, int N) {
 	vector<vector<double>> dataOrigin = im.getData();
 	vector<vector<double>> dataNew = im.getData();
 	int channelSize = dataOrigin.size();
+	int H = im.getHeight();
+	int W = im.getWidth();
 
 	//cout << channelData << endl;
 
 	vector<double> channel;
-	vector<double> prev;
+	vector<vector<double>> finalChanPgm;
+	vector<double> finalChanPgm1D;
+	vector<vector<double>> prev;
+	vector<vector<double>> next(H, vector<double>(W));
 
-	double tau = 0.5;
+	double tau = 0.2;
 
 	int h = 1;
 
-	for (int c = 0; c < channelSize; c++) {
-		channel = dataOrigin[c];
+	double c = tau / (h * h);
+	//tempForLinDif[0] = im;
+	for (int ch = 0; ch < channelSize; ch++) {
+		channel = dataOrigin[ch];
 
-		prev = channel;
+		prev = im.to2D(H, W, channel);
 		for (int n = 0; n < N; n++) {
+			next = vector<vector<double>>(H, vector<double>(W, 0.0));
+			for (int i = 0; i < H; ++i) {
+				for (int j = 0; j < W; ++j) {
+			
+					if (j + 1 > W - 1) { //2
+						if (i - 1 < 0) { //5
+							next[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							next[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j];
+							continue;
+						}
+						if (i + 1 > H - 1) { //6
+							next[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							next[i][j] += c * prev[i][j - 1] + c * prev[i - 1][j];
+							continue;
+						}
+						next[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
+						next[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i - 1][j];
+						continue;
+					}
+					if (i - 1 < 0) { // 1
+						if (j + 1 > W - 1) { // 5
+							next[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							next[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j];
+							continue;
+						}
+						if (j - 1 < 0) { //8
+							next[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							next[i][j] += c * prev[i][j + 1] + c * prev[i + 1][j];
+							continue;
+						}
+						next[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
+						next[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i][j + 1];
+						continue;
+					}
+					if (j - 1 < 0) { //4
+						if (i - 1 < 0) { //8
+							next[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							next[i][j] += c * prev[i][j + 1] + c * prev[i + 1][j];
+							continue;
+						}
+						if (i + 1 > H - 1) { //7
+							next[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							next[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j];
+							continue;
+						}
+						next[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
+						next[i][j] += c * prev[i - 1][j] + c * prev[i + 1][j] + c * prev[i][j + 1];
+						continue;
+					}
+					if (i + 1 > H - 1) { // 3
+						if (j - 1 < 0) { // 7
+							next[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							next[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j];
+							continue;
+						}
+						if (j + 1 > W - 1) { //6
+							next[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							next[i][j] += c * prev[i][j - 1] + c * prev[i - 1][j];
+							continue;
+						}
+						next[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
+						next[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j] + c * prev[i][j - 1];
+						continue;
+					}
+					//A.insert(idx, idx + 1) = -1.0;//i,j+1
+					//A.insert(idx, idx - 1) = -1.0;//i,j-1
+					//A.insert(idx, idx + cols) = -1.0;//i+1,j
+					//A.insert(idx, idx - cols) = -1.0;//i-1,j
+					////b(idx) = matrixInPrevTime[i][j];
+					//b(idx) = 0;
+					next[i][j] = (1 - ((4 * tau) / (h * h))) * prev[i][j] + c * prev[i][j - 1] + c * prev[i + 1][j] + c*prev[i][j + 1] + c * prev[i - 1][j];
+				}
+			}
 
+			prev = next;
 		}
-
+		finalChanPgm = im.to255(H, W, next);
+		finalChanPgm1D = im.to1D(H, W, finalChanPgm);
+		dataOrigin[ch] = finalChanPgm1D;
 	}
+
+	im.setData(dataOrigin);
 }
 
 bool saveToPgm(const std::string& filename, int width, int height, const std::vector<double>& data)
