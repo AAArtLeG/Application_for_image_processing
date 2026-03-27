@@ -6,6 +6,8 @@
 #include "ViewerWidget.h"
 #include "ImageProcessing.h"
 
+using namespace std;
+
 class ImageViewer : public QMainWindow
 {
 	Q_OBJECT
@@ -31,6 +33,9 @@ private:
 
 	ImageProcessing ip;
 
+	int numOfItersForLinDif = 0;
+	int curIterOfLinDif = 0;
+	vector<vector<vector<double>>> history = vector<vector<vector<double>>>{};
 private slots:
 	void on_actionOpen_triggered();
 	void on_actionSave_as_triggered();
@@ -38,4 +43,7 @@ private slots:
 	void on_pushButtonFSHS_clicked(); 
 	void on_pushButtonCon_clicked(); 
 	void on_pushButtonLinDif_clicked();
+	void on_pushButtonSelectCur_clicked();
+	void on_pushButtonStopOnLast_clicked();
+	void on_spinBoxLinDifIters_valueChanged(int value);
 };

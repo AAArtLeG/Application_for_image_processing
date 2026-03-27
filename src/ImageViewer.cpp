@@ -1,5 +1,7 @@
 #include "ImageViewer.h"
 
+using namespace std;
+
 ImageViewer::ImageViewer(QWidget* parent)
 	: QMainWindow(parent), ui(new Ui::ImageViewerClass)
 {
@@ -143,6 +145,76 @@ void ImageViewer::on_pushButtonCon_clicked() {
 }
 
 void ImageViewer::on_pushButtonLinDif_clicked() {
-	ip.linDiffusionExplicite(images[0], 100);
+	bool ok;
+	numOfItersForLinDif = QInputDialog::getInt(
+		this,
+		"Input",
+		"Enter a number:",
+		1,      // value by default
+		1,      // min
+		1000,    // max
+		1,      // step
+		&ok
+	);
+
+	if (ok) {
+		// user pressed OK
+		qDebug() << "Entered value:" << numOfItersForLinDif;
+	}
+	else {
+		// user pressed Cancel
+		qDebug() << "Cancelled";
+		return;
+	}
+
+	ui->spinBoxLinDifIters->setRange(0, numOfItersForLinDif - 1);
+
+	ip.linDiffusionExplicite(images[0], numOfItersForLinDif, history);
+	//vW->setImage(images[0].toQImageGray());
+
+	ui->spinBoxLinDifIters->setValue(numOfItersForLinDif - 1);
+
+	ui->spinBoxLinDifIters->setEnabled(true);
+	ui->pushButtonSelectCur->setEnabled(true);
+	ui->pushButtonStopOnLast->setEnabled(true);
+}
+
+void ImageViewer::on_pushButtonSelectCur_clicked() {
+	images[0].setData(history[curIterOfLinDif]);
+
+	vW->setImage(images[0].toQImageGray());
+
+	numOfItersForLinDif = 0;
+	curIterOfLinDif = 0;
+	ui->spinBoxLinDifIters->blockSignals(true);
+	ui->spinBoxLinDifIters->setRange(0, 0);
+	ui->spinBoxLinDifIters->blockSignals(false);
+	ui->spinBoxLinDifIters->setEnabled(false);
+	ui->pushButtonSelectCur->setEnabled(false);
+	ui->pushButtonStopOnLast->setEnabled(false);
+}
+
+void ImageViewer::on_pushButtonStopOnLast_clicked() {
+	images[0].setData(history[numOfItersForLinDif - 1]);
+
+	vW->setImage(images[0].toQImageGray());
+
+	numOfItersForLinDif = 0;
+	curIterOfLinDif = 0;
+	ui->spinBoxLinDifIters->blockSignals(true);
+	ui->spinBoxLinDifIters->setRange(0, 0);
+	ui->spinBoxLinDifIters->blockSignals(false);
+	ui->spinBoxLinDifIters->setEnabled(false);
+	ui->pushButtonSelectCur->setEnabled(false);
+	ui->pushButtonStopOnLast->setEnabled(false);
+}
+
+void ImageViewer::on_spinBoxLinDifIters_valueChanged(int value)
+{
+	qDebug() << value;
+	curIterOfLinDif = value;
+
+	images[0].setData(history[curIterOfLinDif]);
+
 	vW->setImage(images[0].toQImageGray());
 }

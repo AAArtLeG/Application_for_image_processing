@@ -7,6 +7,8 @@
 #include <fstream>
 #include <QImage.h>
 
+using namespace std;
+
 bool saveToPgm(const std::string& filename, int width, int height, const std::vector<double>& data);
 
 class ImageData {
@@ -51,10 +53,10 @@ public:
 
 class ImageProcessing {
 private:
-	std::vector<std::vector<ImageData>> tempForLinDif;
+	
 public:
 	ImageProcessing() {};
 	~ImageProcessing() {};
 
-	void linDiffusionExplicite(ImageData& im, int N);
+	void linDiffusionExplicite(ImageData& im, int N, vector<vector<vector<double>>>& history);
 };

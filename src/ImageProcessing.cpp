@@ -282,7 +282,7 @@ void ImageData::convolution() {
 	data[0] = finalPgm1D;
 }
 
-void ImageProcessing::linDiffusionExplicite(ImageData& im, int N) {
+void ImageProcessing::linDiffusionExplicite(ImageData& im, int N, vector<vector<vector<double>>>& history) {
 	vector<vector<double>> dataOrigin = im.getData();
 	vector<vector<double>> dataNew = im.getData();
 	int channelSize = dataOrigin.size();
@@ -296,7 +296,7 @@ void ImageProcessing::linDiffusionExplicite(ImageData& im, int N) {
 	vector<double> finalChanPgm1D;
 	vector<vector<double>> prev;
 	vector<vector<double>> next(H, vector<double>(W));
-
+	history.assign(N, vector<vector<double>>(channelSize, vector<double>(H * W, 0.0)));
 	double tau = 0.2;
 
 	int h = 1;
@@ -383,6 +383,9 @@ void ImageProcessing::linDiffusionExplicite(ImageData& im, int N) {
 			}
 
 			prev = next;
+			finalChanPgm = im.to255(H, W, next);
+			finalChanPgm1D = im.to1D(H, W, finalChanPgm);
+			history[n][ch] = finalChanPgm1D;
 		}
 		finalChanPgm = im.to255(H, W, next);
 		finalChanPgm1D = im.to1D(H, W, finalChanPgm);

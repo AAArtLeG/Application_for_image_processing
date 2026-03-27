@@ -25,7 +25,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1413</width>
+         <width>1362</width>
          <height>942</height>
         </rect>
        </property>
@@ -96,12 +96,43 @@
       <layout class="QGridLayout" name="gridLayout"/>
      </item>
      <item>
-      <widget class="QSpinBox" name="spinBox"/>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Lin Diffusioin Section</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonLinDif">
        <property name="text">
         <string>Lin Diffusion</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="spinBoxLinDifIters">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonSelectCur">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Select Current Version</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonStopOnLast">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Stop (Select Fin Img)</string>
        </property>
       </widget>
      </item>
