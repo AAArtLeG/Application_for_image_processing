@@ -692,7 +692,7 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 	im.setData(dataOrigin);
 }
 
-void ImageProcessing::nonLinPeronaMalikSemiImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history) {
+void ImageProcessing::nonLinPeronaMalikSemiImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history, double Tau) {
 	vector<vector<double>> dataOrigin = im.getData();
 	int channelSize = dataOrigin.size();
 	int H = im.getHeight();
@@ -702,7 +702,7 @@ void ImageProcessing::nonLinPeronaMalikSemiImplicit(ImageData& im, int N, vector
 	vector<vector<double>> finalChanPgm;
 	vector<double> finalChanPgm1D;
 
-	double tau = 0.5;     
+	double tau = Tau;     
 	double sigma = 0.25;    
 	double K = 200.0; 
 	int h = 1;

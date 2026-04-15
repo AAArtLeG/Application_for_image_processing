@@ -98,7 +98,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Lin Diffusioin Section</string>
+        <string>Diffusion Section</string>
        </property>
       </widget>
      </item>
@@ -106,6 +106,13 @@
       <widget class="QPushButton" name="pushButtonLinDif">
        <property name="text">
         <string>Lin Diffusion</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonPeronMalik">
+       <property name="text">
+        <string>Peron-Malik</string>
        </property>
       </widget>
      </item>
