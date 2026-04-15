@@ -58,7 +58,7 @@ public:
 	ImageProcessing() {};
 	~ImageProcessing() {};
 
-	void linDiffusionExplicite(ImageData& im, int N, vector<vector<vector<double>>>& history);
-	void linDiffusionImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history);
+	void linDiffusionExplicite(ImageData& im, int N, vector<vector<vector<double>>>& history, double Tau);
+	void linDiffusionImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history, double Tau);
 	void nonLinPeronaMalikSemiImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history);
 };

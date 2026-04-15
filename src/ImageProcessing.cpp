@@ -282,7 +282,7 @@ void ImageData::convolution() {
 	data[0] = finalPgm1D;
 }
 
-void ImageProcessing::linDiffusionExplicite(ImageData& im, int N, vector<vector<vector<double>>>& history) {
+void ImageProcessing::linDiffusionExplicite(ImageData& im, int N, vector<vector<vector<double>>>& history, double Tau) {
 	vector<vector<double>> dataOrigin = im.getData();
 	vector<vector<double>> dataNew = im.getData();
 	int channelSize = dataOrigin.size();
@@ -290,14 +290,15 @@ void ImageProcessing::linDiffusionExplicite(ImageData& im, int N, vector<vector<
 	int W = im.getWidth();
 
 	//cout << channelData << endl;
-
+	cout << "explicit" << endl;
+	
 	vector<double> channel;
 	vector<vector<double>> finalChanPgm;
 	vector<double> finalChanPgm1D;
 	vector<vector<double>> prev;
 	vector<vector<double>> next(H, vector<double>(W));
 	history.assign(N, vector<vector<double>>(channelSize, vector<double>(H * W, 0.0)));
-	double tau = 0.2;
+	double tau = Tau;
 
 	int h = 1;
 
@@ -395,7 +396,7 @@ void ImageProcessing::linDiffusionExplicite(ImageData& im, int N, vector<vector<
 	im.setData(dataOrigin);
 }
 
-void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history) {
+void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history, double Tau) {
 	vector<vector<double>> dataOrigin = im.getData();
 	int channelSize = dataOrigin.size();
 	int H = im.getHeight();
@@ -414,7 +415,7 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 	double tol = 1e-4;
 	int maxIter = 100;
 
-	double tau = 0.5;
+	double tau = Tau;
 	int h = 1;
 	double c = tau / (h * h);
 	
@@ -426,7 +427,7 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 		curr = prev;
 
 		for (int iter = 0; iter < maxIter; iter++) {
-			double maxDiff = 0.0;
+			double residualSq = 0.0;
 
 			cout << iter << endl;
 
@@ -444,6 +445,12 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 							double newValue = oldValue + omega * (sum - oldValue);
 							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * curr[i][j - 1]
+								- c * curr[i + 1][j]
+								- prev[i][j];
+							residualSq += r_i * r_i;
 							continue;
 						}
 
@@ -455,6 +462,12 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 							double newValue = oldValue + omega * (sum - oldValue);
 							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * curr[i][j - 1]
+								- c * curr[i - 1][j]
+								- prev[i][j];
+							residualSq += r_i * r_i;
 							continue;
 						}
 
@@ -466,6 +479,13 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 						double newValue = oldValue + omega * (sum - oldValue);
 						curr[i][j] = newValue;
+
+						double r_i = diag * oldValue
+							- c * curr[i][j - 1]
+							- c * curr[i + 1][j]
+							- c * curr[i - 1][j]
+							- prev[i][j];
+						residualSq += r_i * r_i;
 						continue;
 					}
 
@@ -478,6 +498,12 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 							double newValue = oldValue + omega * (sum - oldValue);
 							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * curr[i][j - 1]
+								- c * curr[i + 1][j]
+								- prev[i][j];
+							residualSq += r_i * r_i;
 							continue;
 						}
 
@@ -489,6 +515,12 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 							double newValue = oldValue + omega * (sum - oldValue);
 							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * curr[i][j + 1]
+								- c * curr[i + 1][j]
+								- prev[i][j];
+							residualSq += r_i * r_i;
 							continue;
 						}
 
@@ -500,6 +532,13 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 						double newValue = oldValue + omega * (sum - oldValue);
 						curr[i][j] = newValue;
+
+						double r_i = diag * oldValue
+							- c * curr[i][j - 1]
+							- c * curr[i + 1][j]
+							- c * curr[i][j + 1]
+							- prev[i][j];
+						residualSq += r_i * r_i;
 						continue;
 					}
 
@@ -512,6 +551,12 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 							double newValue = oldValue + omega * (sum - oldValue);
 							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * curr[i][j + 1]
+								- c * curr[i + 1][j]
+								- prev[i][j];
+							residualSq += r_i * r_i;
 							continue;
 						}
 
@@ -523,6 +568,12 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 							double newValue = oldValue + omega * (sum - oldValue);
 							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * curr[i][j + 1]
+								- c * curr[i - 1][j]
+								- prev[i][j];
+							residualSq += r_i * r_i;
 							continue;
 						}
 
@@ -534,6 +585,13 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 						double newValue = oldValue + omega * (sum - oldValue);
 						curr[i][j] = newValue;
+
+						double r_i = diag * oldValue
+							- c * curr[i - 1][j]
+							- c * curr[i + 1][j]
+							- c * curr[i][j + 1]
+							- prev[i][j];
+						residualSq += r_i * r_i;
 						continue;
 					}
 
@@ -546,6 +604,12 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 							double newValue = oldValue + omega * (sum - oldValue);
 							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * curr[i][j + 1]
+								- c * curr[i - 1][j]
+								- prev[i][j];
+							residualSq += r_i * r_i;
 							continue;
 						}
 
@@ -557,6 +621,12 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 							double newValue = oldValue + omega * (sum - oldValue);
 							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * curr[i][j - 1]
+								- c * curr[i - 1][j]
+								- prev[i][j];
+							residualSq += r_i * r_i;
 							continue;
 						}
 
@@ -568,6 +638,13 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 						double newValue = oldValue + omega * (sum - oldValue);
 						curr[i][j] = newValue;
+
+						double r_i = diag * oldValue
+							- c * curr[i][j + 1]
+							- c * curr[i - 1][j]
+							- c * curr[i][j - 1]
+							- prev[i][j];
+						residualSq += r_i * r_i;
 						continue;
 					}
 
@@ -581,6 +658,14 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 					double newValue = oldValue + omega * (sum - oldValue);
 					curr[i][j] = newValue;
+
+					double r_i = diag * oldValue
+						- c * curr[i][j - 1]
+						- c * curr[i + 1][j]
+						- c * curr[i][j + 1]
+						- c * curr[i - 1][j]
+						- prev[i][j];
+					residualSq += r_i * r_i;
 				}
 			}
 
@@ -589,17 +674,22 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 			finalChanPgm = im.to255(H, W, next);
 			finalChanPgm1D = im.to1D(H, W, finalChanPgm);
-			history[iter][ch] = finalChanPgm1D;
+			//history[iter][ch] = finalChanPgm1D;
 
-			if (maxDiff < tol) {
+			double residual = sqrt(residualSq);
+			if (residual < tol) {
 				break;
 			}
+
 		}
 
         finalChanPgm = im.to255(H, W, next);
         finalChanPgm1D = im.to1D(H, W, finalChanPgm);
         dataOrigin[ch] = finalChanPgm1D;
+		history[0][ch] = finalChanPgm1D;
     }
+
+	im.setData(dataOrigin);
 }
 
 void ImageProcessing::nonLinPeronaMalikSemiImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history) {

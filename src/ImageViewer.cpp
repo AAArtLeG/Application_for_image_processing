@@ -146,37 +146,64 @@ void ImageViewer::on_pushButtonCon_clicked() {
 
 void ImageViewer::on_pushButtonLinDif_clicked() {
 	bool ok;
-	numOfItersForLinDif = QInputDialog::getInt(
+
+	double tau = QInputDialog::getDouble(
 		this,
 		"Input",
-		"Enter a number:",
-		1,      // value by default
-		1,      // min
-		1000,    // max
-		1,      // step
+		"Enter tau:",
+		0.2,    // value by default
+		0.0,    // min
+		1000.0, // max
+		2,      // decimals
 		&ok
 	);
 
 	if (ok) {
-		// user pressed OK
-		qDebug() << "Entered value:" << numOfItersForLinDif;
+		qDebug() << "Entered tau:" << tau;
 	}
 	else {
-		// user pressed Cancel
 		qDebug() << "Cancelled";
 		return;
 	}
 
-	ui->spinBoxLinDifIters->setRange(0, numOfItersForLinDif - 1);
+	if (tau < 0.5) {
+		numOfItersForLinDif = QInputDialog::getInt(
+			this,
+			"Input",
+			"Enter a number:",
+			1,      // value by default
+			1,      // min
+			1000,   // max
+			1,      // step
+			&ok
+		);
 
-	//ip.linDiffusionExplicite(images[0], numOfItersForLinDif, history);
-	//ip.linDiffusionImplicit(images[0], numOfItersForLinDif, history);
-	ip.nonLinPeronaMalikSemiImplicit(images[0], numOfItersForLinDif, history);
-	//vW->setImage(images[0].toQImageGray());
+		if (ok) {
+			qDebug() << "Entered value:" << numOfItersForLinDif;
+		}
+		else {
+			qDebug() << "Cancelled";
+			return;
+		}
+
+		ui->spinBoxLinDifIters->setRange(0, numOfItersForLinDif - 1);
+
+		ip.linDiffusionExplicite(images[0], numOfItersForLinDif, history, tau);
+	}
+	else {
+		numOfItersForLinDif = 1;
+
+		ui->spinBoxLinDifIters->setRange(0, numOfItersForLinDif - 1);
+
+		ip.linDiffusionImplicit(images[0], numOfItersForLinDif, history, tau);
+	}
 
 	cout << "history size = " << history.size() << "\n";
 
 	ui->spinBoxLinDifIters->setValue(numOfItersForLinDif - 1);
+
+	images[0].setData(history[numOfItersForLinDif - 1]);
+	vW->setImage(images[0].toQImageGray());
 
 	ui->spinBoxLinDifIters->setEnabled(true);
 	ui->pushButtonSelectCur->setEnabled(true);
