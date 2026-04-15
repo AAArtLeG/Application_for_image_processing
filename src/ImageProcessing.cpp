@@ -411,7 +411,7 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
 
 	history.assign(N, vector<vector<double>>(channelSize, vector<double>(H * W, 0.0)));
 
-	double tol = 1e-400;
+	double tol = 1e-4;
 	int maxIter = 100;
 
 	double tau = 0.5;
@@ -600,6 +600,434 @@ void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<v
         finalChanPgm1D = im.to1D(H, W, finalChanPgm);
         dataOrigin[ch] = finalChanPgm1D;
     }
+}
+
+void ImageProcessing::nonLinPeronaMalikSemiImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history) {
+	vector<vector<double>> dataOrigin = im.getData();
+	int channelSize = dataOrigin.size();
+	int H = im.getHeight();
+	int W = im.getWidth();
+
+	vector<double> channel;
+	vector<vector<double>> finalChanPgm;
+	vector<double> finalChanPgm1D;
+
+	double tau = 0.5;     
+	double sigma = 0.25;    
+	double K = 200.0; 
+	int h = 1;
+
+	history.assign(N, vector<vector<double>>(channelSize, vector<double>(H * W, 0.0)));
+
+	double tol = 1e-4;
+	int    maxIter = 100;
+	double omega = 1.3;
+
+	double c = tau / (h * h);
+	double cSigma = sigma / (h * h);
+	
+	for (int ch = 0; ch < channelSize; ch++) {
+		channel = dataOrigin[ch];
+
+		vector<vector<double>> prev = im.to2D(H, W, channel);
+
+		for (int n = 0; n < N; n++) {
+			vector<vector<double>> uSigma(H, vector<double>(W, 0.0));
+
+
+			for (int i = 0; i < H; ++i) {
+				for (int j = 0; j < W; ++j) {
+
+					if (j + 1 > W - 1) { //2
+						if (i - 1 < 0) { //5
+							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j];
+							continue;
+						}
+						if (i + 1 > H - 1) { //6
+							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i - 1][j];
+							continue;
+						}
+						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
+						uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i - 1][j];
+						continue;
+					}
+					if (i - 1 < 0) { // 1
+						if (j + 1 > W - 1) { // 5
+							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j];
+							continue;
+						}
+						if (j - 1 < 0) { //8
+							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i + 1][j];
+							continue;
+						}
+						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
+						uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i][j + 1];
+						continue;
+					}
+					if (j - 1 < 0) { //4
+						if (i - 1 < 0) { //8
+							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i + 1][j];
+							continue;
+						}
+						if (i + 1 > H - 1) { //7
+							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j];
+							continue;
+						}
+						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
+						uSigma[i][j] += c * prev[i - 1][j] + c * prev[i + 1][j] + c * prev[i][j + 1];
+						continue;
+					}
+					if (i + 1 > H - 1) { // 3
+						if (j - 1 < 0) { // 7
+							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j];
+							continue;
+						}
+						if (j + 1 > W - 1) { //6
+							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
+							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i - 1][j];
+							continue;
+						}
+						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
+						uSigma[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j] + c * prev[i][j - 1];
+						continue;
+					}
+					uSigma[i][j] = (1 - ((4 * tau) / (h * h))) * prev[i][j] + c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i][j + 1] + c * prev[i - 1][j];
+				}
+			}
+
+			int Hx = H + 2;
+			int Wx = W + 2;
+			vector<vector<double>> uSigmaBig(Hx, vector<double>(Wx, 0.0));
+
+			for (int i = 0; i < H; ++i) { //inner
+				for (int j = 0; j < W; ++j) {
+					uSigmaBig[i + 1][j + 1] = uSigma[i][j];
+				}
+			}
+			for (int j = 0; j < W; ++j) { //bot and top
+				uSigmaBig[0][j + 1] = uSigma[0][j];
+				uSigmaBig[Hx - 1][j + 1] = uSigma[H - 1][j];
+			}
+			for (int i = 0; i < H; ++i) { // left and right
+				uSigmaBig[i + 1][0] = uSigma[i][0];
+				uSigmaBig[i + 1][Wx - 1] = uSigma[i][W - 1];
+			}
+
+			uSigmaBig[0][0] = uSigma[0][0];
+			uSigmaBig[0][Wx - 1] = uSigma[0][W - 1];
+			uSigmaBig[Hx - 1][0] = uSigma[H - 1][0];
+			uSigmaBig[Hx - 1][Wx - 1] = uSigma[H - 1][W - 1];
+
+			vector<vector<double>> gPE(H, vector<double>(W, 0.0));
+			vector<vector<double>> gPW(H, vector<double>(W, 0.0));
+			vector<vector<double>> gPN(H, vector<double>(W, 0.0));
+			vector<vector<double>> gPS(H, vector<double>(W, 0.0));
+
+			for (int i = 0; i < H; ++i) {
+				for (int j = 0; j < W; ++j) {
+
+					int ii = i + 1;
+					int jj = j + 1;
+
+					double up = uSigmaBig[ii][jj];
+					double uN = uSigmaBig[ii - 1][jj];
+					double uS = uSigmaBig[ii + 1][jj];
+					double uW = uSigmaBig[ii][jj - 1];
+					double uE = uSigmaBig[ii][jj + 1];
+					double uNE = uSigmaBig[ii - 1][jj + 1];
+					double uNW = uSigmaBig[ii - 1][jj - 1];
+					double uSE = uSigmaBig[ii + 1][jj + 1];
+					double uSW = uSigmaBig[ii + 1][jj - 1];
+
+					double gradPE = (((uE - up) / h) * ((uE - up) / h)) + (((uN + uNE - uS - uSE) / (4 * h)) * ((uN + uNE - uS - uSE) / (4 * h)));
+					double gradPS = (((uS - up) / h) * ((uS - up) / h)) + (((uW + uSW - uE - uSE) / (4 * h)) * ((uW + uSW - uE - uSE) / (4 * h)));
+					double gradPW = (((uW - up) / h) * ((uW - up) / h)) + (((uN + uNW - uS - uSW) / (4 * h)) * ((uN + uNW - uS - uSW) / (4 * h)));
+					double gradPN = (((uN - up) / h) * ((uN - up) / h)) + (((uW + uNW - uE - uNE) / (4 * h)) * ((uW + uNW - uE - uNE) / (4 * h)));
+
+					gPE[i][j] = 1.0 / (1.0 + K * gradPE);
+					gPS[i][j] = 1.0 / (1.0 + K * gradPS);
+					gPW[i][j] = 1.0 / (1.0 + K * gradPW);
+					gPN[i][j] = 1.0 / (1.0 + K * gradPN);
+					
+				}
+			}
+
+			vector<vector<double>> curr = prev;   // начальное приближение
+			vector<vector<double>> next(H, vector<double>(W, 0.0));
+
+			for (int iter = 0; iter < maxIter; iter++) {
+				double maxDiff = 0.0;
+				double residualSq = 0.0;
+
+				for (int i = 0; i < H; ++i) {
+					for (int j = 0; j < W; ++j) {
+
+						double oldValue = curr[i][j];
+
+						double gn = gPN[i][j];
+						double gs = gPS[i][j];
+						double gw = gPW[i][j];
+						double ge = gPE[i][j];
+
+						if (j + 1 > W - 1) { // 2
+							if (i - 1 < 0) { // 5
+								double diag = 1.0 + c * (gs + gw);
+								double sum = (prev[i][j]
+									+ c * gw *curr[i][j - 1]
+									+ c * gs * curr[i + 1][j]) / diag;
+
+								double newValue = oldValue + omega * (sum - oldValue);
+								curr[i][j] = newValue;
+
+								double r_i = diag * oldValue
+									- c * gw * curr[i][j - 1]
+									- c * gs * curr[i + 1][j]
+									- prev[i][j];
+								residualSq += r_i * r_i;
+								continue;
+							}
+
+							if (i + 1 > H - 1) { // 6
+								double diag = 1.0 + c * (gw + gn);
+								double sum = (prev[i][j]
+									+ c * gw * curr[i][j - 1]
+									+ c * gn * curr[i - 1][j]) / diag;
+
+								double newValue = oldValue + omega * (sum - oldValue);
+								curr[i][j] = newValue;
+
+								double r_i = diag * oldValue
+									- c * gw * curr[i][j - 1]
+									- c * gn * curr[i - 1][j]
+									- prev[i][j];
+								residualSq += r_i * r_i;
+								continue;
+							}
+
+							double diag = 1.0 + c * (gs + gw + gn);
+							double sum = (prev[i][j]
+								+ c * gw * curr[i][j - 1]
+								+ c * gs * curr[i + 1][j]
+								+ c * gn * curr[i - 1][j]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * gw * curr[i][j - 1]
+								- c * gs * curr[i + 1][j]
+								- c * gn * curr[i - 1][j]
+								- prev[i][j];
+							residualSq += r_i * r_i;
+							continue;
+						}
+
+						if (i - 1 < 0) { // 1
+							if (j + 1 > W - 1) { // 5
+								double diag = 1.0 + c * (gs + gw);
+								double sum = (prev[i][j]
+									+ c * gw * curr[i][j - 1]
+									+ c * gs * curr[i + 1][j]) / diag;
+
+								double newValue = oldValue + omega * (sum - oldValue);
+								curr[i][j] = newValue;
+
+								double r_i = diag * oldValue
+									- c * gw * curr[i][j - 1]
+									- c * gs * curr[i + 1][j]
+									- prev[i][j];
+								residualSq += r_i * r_i;
+								continue;
+							}
+
+							if (j - 1 < 0) { // 8
+								double diag = 1.0 + c * (gs + ge);
+								double sum = (prev[i][j]
+									+ c * ge * curr[i][j + 1]
+									+ c * gs * curr[i + 1][j]) / diag;
+
+								double newValue = oldValue + omega * (sum - oldValue);
+								curr[i][j] = newValue;
+
+								double r_i = diag * oldValue
+									- c * ge * curr[i][j + 1]
+									- c * gs * curr[i + 1][j]
+									- prev[i][j];
+								residualSq += r_i * r_i;
+								continue;
+							}
+
+							double diag = 1.0 + c * (gs + gw + ge);
+							double sum = (prev[i][j]
+								+ c * gw * curr[i][j - 1]
+								+ c * gs * curr[i + 1][j]
+								+ c * ge * curr[i][j + 1]) / diag;
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * gw * curr[i][j - 1]
+								- c * gs * curr[i + 1][j]
+								- c * ge * curr[i][j + 1]
+								- prev[i][j];
+							residualSq += r_i * r_i;
+							continue;
+						}
+
+						if (j - 1 < 0) { // 4
+							if (i - 1 < 0) { // 8
+								double diag = 1.0 + c * (gs + ge);
+								double sum = (prev[i][j]
+									+ c * ge * curr[i][j + 1]
+									+ c * gs * curr[i + 1][j]) / diag;
+
+								double newValue = oldValue + omega * (sum - oldValue);
+								curr[i][j] = newValue;
+
+								double r_i = diag * oldValue
+									- c * ge * curr[i][j + 1]
+									- c * gs * curr[i + 1][j]
+									- prev[i][j];
+								residualSq += r_i * r_i;
+								continue;
+							}
+
+							if (i + 1 > H - 1) { // 7
+								double diag = 1.0 + c * (ge + gn);
+								double sum = (prev[i][j]
+									+ c * ge * curr[i][j + 1]
+									+ c * gn * curr[i - 1][j]) / diag;
+
+								double newValue = oldValue + omega * (sum - oldValue);
+								curr[i][j] = newValue;
+
+								double r_i = diag * oldValue
+									- c * ge * curr[i][j + 1]
+									- c * gn * curr[i - 1][j]
+									- prev[i][j];
+								residualSq += r_i * r_i;
+								continue;
+							}
+
+							double diag = 1.0 + c * (gn + gs + ge);
+							double sum = (prev[i][j]
+								+ c * gn * curr[i - 1][j]
+								+ c * gs * curr[i + 1][j]
+								+ c * ge * curr[i][j + 1]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * gn * curr[i - 1][j]
+								- c * gs * curr[i + 1][j]
+								- c * ge * curr[i][j + 1]
+								- prev[i][j];
+							residualSq += r_i * r_i;
+							continue;
+						}
+
+						if (i + 1 > H - 1) { // 3
+							if (j - 1 < 0) { // 7
+								double diag = 1.0 + c * (ge + gn);
+								double sum = (prev[i][j]
+									+ c * ge * curr[i][j + 1]
+									+ c * gn * curr[i - 1][j]) / diag;
+
+								double newValue = oldValue + omega * (sum - oldValue);
+								curr[i][j] = newValue;
+
+								double r_i = diag * oldValue
+									- c * ge * curr[i][j + 1]
+									- c * gn * curr[i - 1][j]
+									- prev[i][j];
+								residualSq += r_i * r_i;
+								continue;
+							}
+
+							if (j + 1 > W - 1) { // 6
+								double diag = 1.0 + c * (gw + gn);
+								double sum = (prev[i][j]
+									+ c * gw * curr[i][j - 1]
+									+ c * gn * curr[i - 1][j]) / diag;
+
+								double newValue = oldValue + omega * (sum - oldValue);
+								curr[i][j] = newValue;
+
+								double r_i = diag * oldValue
+									- c * gw * curr[i][j - 1]
+									- c * gn * curr[i - 1][j]
+									- prev[i][j];
+								residualSq += r_i * r_i;
+								continue;
+							}
+
+							double diag = 1.0 + c * (ge + gn + gw);
+							double sum = (prev[i][j]
+								+ c * ge * curr[i][j + 1]
+								+ c * gn * curr[i - 1][j]
+								+ c * gw * curr[i][j - 1]) / diag;
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+
+							double r_i = diag * oldValue
+								- c * ge * curr[i][j + 1]
+								- c * gn * curr[i - 1][j]
+								- c * gw * curr[i][j - 1]
+								- prev[i][j];
+							residualSq += r_i * r_i;
+							continue;
+						}
+
+						// vnútorný bod
+						double diag = 1.0 + c * (gw + gs + ge + gn);
+						double sum = (prev[i][j]
+							+ c * gw * curr[i][j - 1]
+							+ c * gs * curr[i + 1][j]
+							+ c * ge * curr[i][j + 1]
+							+ c * gn * curr[i - 1][j]) / diag;
+
+						double newValue = oldValue + omega * (sum - oldValue);
+						curr[i][j] = newValue;
+
+						double r_i = diag * oldValue
+							- c * gw * curr[i][j - 1]
+							- c * gs * curr[i + 1][j]
+							- c * ge * curr[i][j + 1]
+							- c * gn * curr[i - 1][j]
+							- prev[i][j];
+						residualSq += r_i * r_i;
+					}
+				}
+
+				double residual = sqrt(residualSq);
+				if (residual < tol) break;
+			}
+
+			next = curr;
+
+			// u^n становится u^{n-1} для следующей итерации
+			prev = next;
+
+			// Сохраняем шаг в history
+			finalChanPgm = im.to255(H, W, next);
+			finalChanPgm1D = im.to1D(H, W, finalChanPgm);
+			history[n][ch] = finalChanPgm1D;
+		}
+
+		finalChanPgm = im.to255(H, W, prev);
+		finalChanPgm1D = im.to1D(H, W, finalChanPgm);
+		dataOrigin[ch] = finalChanPgm1D;
+	}
+
+	im.setData(dataOrigin);
 }
 
 bool saveToPgm(const std::string& filename, int width, int height, const std::vector<double>& data)

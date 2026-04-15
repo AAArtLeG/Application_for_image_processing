@@ -60,4 +60,5 @@ public:
 
 	void linDiffusionExplicite(ImageData& im, int N, vector<vector<vector<double>>>& history);
 	void linDiffusionImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history);
+	void nonLinPeronaMalikSemiImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history);
 };
