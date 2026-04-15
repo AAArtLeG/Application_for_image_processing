@@ -395,6 +395,213 @@ void ImageProcessing::linDiffusionExplicite(ImageData& im, int N, vector<vector<
 	im.setData(dataOrigin);
 }
 
+void ImageProcessing::linDiffusionImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history) {
+	vector<vector<double>> dataOrigin = im.getData();
+	int channelSize = dataOrigin.size();
+	int H = im.getHeight();
+	int W = im.getWidth();
+
+	vector<double> channel;
+	vector<vector<double>> finalChanPgm;
+	vector<double> finalChanPgm1D;
+
+	vector<vector<double>> prev;
+	vector<vector<double>> curr;
+	vector<vector<double>> next(H, vector<double>(W));
+
+	history.assign(N, vector<vector<double>>(channelSize, vector<double>(H * W, 0.0)));
+
+	double tol = 1e-400;
+	int maxIter = 100;
+
+	double tau = 0.5;
+	int h = 1;
+	double c = tau / (h * h);
+	
+	double omega = 1.3;
+
+	for (int ch = 0; ch < channelSize; ch++) {
+        channel = dataOrigin[ch];
+		prev = im.to2D(H, W, channel);
+		curr = prev;
+
+		for (int iter = 0; iter < maxIter; iter++) {
+			double maxDiff = 0.0;
+
+			cout << iter << endl;
+
+			for (int i = 0; i < H; ++i) {
+				for (int j = 0; j < W; ++j) {
+
+					double oldValue = curr[i][j];
+
+					if (j + 1 > W - 1) { // 2
+						if (i - 1 < 0) { // 5
+							double diag = 1.0 + 2.0 * c;
+							double sum = (prev[i][j]
+								+ c * curr[i][j - 1]
+								+ c * curr[i + 1][j]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+							continue;
+						}
+
+						if (i + 1 > H - 1) { // 6
+							double diag = 1.0 + 2.0 * c;
+							double sum = (prev[i][j]
+								+ c * curr[i][j - 1]
+								+ c * curr[i - 1][j]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+							continue;
+						}
+
+						double diag = 1.0 + 3.0 * c;
+						double sum = (prev[i][j]
+							+ c * curr[i][j - 1]
+							+ c * curr[i + 1][j]
+							+ c * curr[i - 1][j]) / diag;
+
+						double newValue = oldValue + omega * (sum - oldValue);
+						curr[i][j] = newValue;
+						continue;
+					}
+
+					if (i - 1 < 0) { // 1
+						if (j + 1 > W - 1) { // 5
+							double diag = 1.0 + 2.0 * c;
+							double sum = (prev[i][j]
+								+ c * curr[i][j - 1]
+								+ c * curr[i + 1][j]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+							continue;
+						}
+
+						if (j - 1 < 0) { // 8
+							double diag = 1.0 + 2.0 * c;
+							double sum = (prev[i][j]
+								+ c * curr[i][j + 1]
+								+ c * curr[i + 1][j]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+							continue;
+						}
+
+						double diag = 1.0 + 3.0 * c;
+						double sum = (prev[i][j]
+							+ c * curr[i][j - 1]
+							+ c * curr[i + 1][j]
+							+ c * curr[i][j + 1]) / diag;
+
+						double newValue = oldValue + omega * (sum - oldValue);
+						curr[i][j] = newValue;
+						continue;
+					}
+
+					if (j - 1 < 0) { // 4
+						if (i - 1 < 0) { // 8
+							double diag = 1.0 + 2.0 * c;
+							double sum = (prev[i][j]
+								+ c * curr[i][j + 1]
+								+ c * curr[i + 1][j]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+							continue;
+						}
+
+						if (i + 1 > H - 1) { // 7
+							double diag = 1.0 + 2.0 * c;
+							double sum = (prev[i][j]
+								+ c * curr[i][j + 1]
+								+ c * curr[i - 1][j]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+							continue;
+						}
+
+						double diag = 1.0 + 3.0 * c;
+						double sum = (prev[i][j]
+							+ c * curr[i - 1][j]
+							+ c * curr[i + 1][j]
+							+ c * curr[i][j + 1]) / diag;
+
+						double newValue = oldValue + omega * (sum - oldValue);
+						curr[i][j] = newValue;
+						continue;
+					}
+
+					if (i + 1 > H - 1) { // 3
+						if (j - 1 < 0) { // 7
+							double diag = 1.0 + 2.0 * c;
+							double sum = (prev[i][j]
+								+ c * curr[i][j + 1]
+								+ c * curr[i - 1][j]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+							continue;
+						}
+
+						if (j + 1 > W - 1) { // 6
+							double diag = 1.0 + 2.0 * c;
+							double sum = (prev[i][j]
+								+ c * curr[i][j - 1]
+								+ c * curr[i - 1][j]) / diag;
+
+							double newValue = oldValue + omega * (sum - oldValue);
+							curr[i][j] = newValue;
+							continue;
+						}
+
+						double diag = 1.0 + 3.0 * c;
+						double sum = (prev[i][j]
+							+ c * curr[i][j + 1]
+							+ c * curr[i - 1][j]
+							+ c * curr[i][j - 1]) / diag;
+
+						double newValue = oldValue + omega * (sum - oldValue);
+						curr[i][j] = newValue;
+						continue;
+					}
+
+					// vnútorný bod
+					double diag = 1.0 + 4.0 * c;
+					double sum = (prev[i][j]
+						+ c * curr[i][j - 1]
+						+ c * curr[i + 1][j]
+						+ c * curr[i][j + 1]
+						+ c * curr[i - 1][j]) / diag;
+
+					double newValue = oldValue + omega * (sum - oldValue);
+					curr[i][j] = newValue;
+				}
+			}
+
+			next = curr;
+			prev = next;
+
+			finalChanPgm = im.to255(H, W, next);
+			finalChanPgm1D = im.to1D(H, W, finalChanPgm);
+			history[iter][ch] = finalChanPgm1D;
+
+			if (maxDiff < tol) {
+				break;
+			}
+		}
+
+        finalChanPgm = im.to255(H, W, next);
+        finalChanPgm1D = im.to1D(H, W, finalChanPgm);
+        dataOrigin[ch] = finalChanPgm1D;
+    }
+}
+
 bool saveToPgm(const std::string& filename, int width, int height, const std::vector<double>& data)
 {
 	std::ofstream f(filename);

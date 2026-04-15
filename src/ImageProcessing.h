@@ -59,4 +59,5 @@ public:
 	~ImageProcessing() {};
 
 	void linDiffusionExplicite(ImageData& im, int N, vector<vector<vector<double>>>& history);
+	void linDiffusionImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history);
 };

@@ -169,8 +169,11 @@ void ImageViewer::on_pushButtonLinDif_clicked() {
 
 	ui->spinBoxLinDifIters->setRange(0, numOfItersForLinDif - 1);
 
-	ip.linDiffusionExplicite(images[0], numOfItersForLinDif, history);
+	//ip.linDiffusionExplicite(images[0], numOfItersForLinDif, history);
+	ip.linDiffusionImplicit(images[0], numOfItersForLinDif, history);
 	//vW->setImage(images[0].toQImageGray());
+
+	cout << "history size = " << history.size() << "\n";
 
 	ui->spinBoxLinDifIters->setValue(numOfItersForLinDif - 1);
 
