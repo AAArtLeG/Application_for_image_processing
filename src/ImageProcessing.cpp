@@ -731,64 +731,64 @@ void ImageProcessing::nonLinPeronaMalikSemiImplicit(ImageData& im, int N, vector
 					if (j + 1 > W - 1) { //2
 						if (i - 1 < 0) { //5
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j];
+							uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j];
 							continue;
 						}
 						if (i + 1 > H - 1) { //6
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i - 1][j];
+							uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i - 1][j];
 							continue;
 						}
 						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
-						uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i - 1][j];
+						uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j] + cSigma * prev[i - 1][j];
 						continue;
 					}
 					if (i - 1 < 0) { // 1
 						if (j + 1 > W - 1) { // 5
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j];
+							uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j];
 							continue;
 						}
 						if (j - 1 < 0) { //8
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i + 1][j];
+							uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i + 1][j];
 							continue;
 						}
 						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
-						uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i][j + 1];
+						uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j] + cSigma * prev[i][j + 1];
 						continue;
 					}
 					if (j - 1 < 0) { //4
 						if (i - 1 < 0) { //8
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i + 1][j];
+							uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i + 1][j];
 							continue;
 						}
 						if (i + 1 > H - 1) { //7
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j];
+							uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i - 1][j];
 							continue;
 						}
 						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
-						uSigma[i][j] += c * prev[i - 1][j] + c * prev[i + 1][j] + c * prev[i][j + 1];
+						uSigma[i][j] += cSigma * prev[i - 1][j] + cSigma * prev[i + 1][j] + cSigma * prev[i][j + 1];
 						continue;
 					}
 					if (i + 1 > H - 1) { // 3
 						if (j - 1 < 0) { // 7
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j];
+							uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i - 1][j];
 							continue;
 						}
 						if (j + 1 > W - 1) { //6
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i - 1][j];
+							uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i - 1][j];
 							continue;
 						}
 						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
-						uSigma[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j] + c * prev[i][j - 1];
+						uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i - 1][j] + cSigma * prev[i][j - 1];
 						continue;
 					}
-					uSigma[i][j] = (1 - ((4 * tau) / (h * h))) * prev[i][j] + c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i][j + 1] + c * prev[i - 1][j];
+					uSigma[i][j] = (1 - ((4 * tau) / (h * h))) * prev[i][j] + cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j] + cSigma * prev[i][j + 1] + cSigma * prev[i - 1][j];
 				}
 			}
 
@@ -1159,64 +1159,64 @@ void ImageProcessing::GMCF(ImageData& im, int N, vector<vector<vector<double>>>&
 					if (j + 1 > W - 1) { //2
 						if (i - 1 < 0) { //5
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j];
+							uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j];
 							continue;
 						}
 						if (i + 1 > H - 1) { //6
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i - 1][j];
+							uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i - 1][j];
 							continue;
 						}
 						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
-						uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i - 1][j];
+						uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j] + cSigma * prev[i - 1][j];
 						continue;
 					}
 					if (i - 1 < 0) { // 1
 						if (j + 1 > W - 1) { // 5
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j];
+							uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j];
 							continue;
 						}
 						if (j - 1 < 0) { //8
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i + 1][j];
+							uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i + 1][j];
 							continue;
 						}
 						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
-						uSigma[i][j] += c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i][j + 1];
+						uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j] + cSigma * prev[i][j + 1];
 						continue;
 					}
 					if (j - 1 < 0) { //4
 						if (i - 1 < 0) { //8
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i + 1][j];
+							uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i + 1][j];
 							continue;
 						}
 						if (i + 1 > H - 1) { //7
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j];
+							uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i - 1][j];
 							continue;
 						}
 						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
-						uSigma[i][j] += c * prev[i - 1][j] + c * prev[i + 1][j] + c * prev[i][j + 1];
+						uSigma[i][j] += cSigma * prev[i - 1][j] + cSigma * prev[i + 1][j] + cSigma * prev[i][j + 1];
 						continue;
 					}
 					if (i + 1 > H - 1) { // 3
 						if (j - 1 < 0) { // 7
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j];
+							uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i - 1][j];
 							continue;
 						}
 						if (j + 1 > W - 1) { //6
 							uSigma[i][j] = (1 - ((2 * tau) / (h * h))) * prev[i][j];
-							uSigma[i][j] += c * prev[i][j - 1] + c * prev[i - 1][j];
+							uSigma[i][j] += cSigma * prev[i][j - 1] + cSigma * prev[i - 1][j];
 							continue;
 						}
 						uSigma[i][j] = (1 - ((3 * tau) / (h * h))) * prev[i][j];
-						uSigma[i][j] += c * prev[i][j + 1] + c * prev[i - 1][j] + c * prev[i][j - 1];
+						uSigma[i][j] += cSigma * prev[i][j + 1] + cSigma * prev[i - 1][j] + cSigma * prev[i][j - 1];
 						continue;
 					}
-					uSigma[i][j] = (1 - ((4 * tau) / (h * h))) * prev[i][j] + c * prev[i][j - 1] + c * prev[i + 1][j] + c * prev[i][j + 1] + c * prev[i - 1][j];
+					uSigma[i][j] = (1 - ((4 * tau) / (h * h))) * prev[i][j] + cSigma * prev[i][j - 1] + cSigma * prev[i + 1][j] + cSigma * prev[i][j + 1] + cSigma * prev[i - 1][j];
 				}
 			}
 
