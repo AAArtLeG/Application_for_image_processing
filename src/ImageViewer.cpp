@@ -253,7 +253,8 @@ void ImageViewer::on_pushButtonPeronMalik_clicked() {
 
 	ui->spinBoxLinDifIters->setRange(0, numOfItersForLinDif - 1);
 
-	ip.nonLinPeronaMalikSemiImplicit(images[0], numOfItersForLinDif, history, tau);
+	//ip.nonLinPeronaMalikSemiImplicit(images[0], numOfItersForLinDif, history, tau);
+	ip.GMCF(images[0], numOfItersForLinDif, history, tau);
 
 	ui->spinBoxLinDifIters->setValue(numOfItersForLinDif - 1);
 
