@@ -1784,7 +1784,7 @@ void ImageProcessing::segmentEdgeNormalMotion(ImageData& im, int N, vector<vecto
 	double K = 500.0;
 	int h = 1;
 
-	history.assign(N, vector<vector<double>>(channelSize, vector<double>(H * W, 0.0)));
+	history.assign(N, vector<vector<double>>(3, vector<double>(H * W, 0.0)));
 
 	double tol = 1e-6;
 	int    maxIter = 10000;
@@ -1797,16 +1797,20 @@ void ImageProcessing::segmentEdgeNormalMotion(ImageData& im, int N, vector<vecto
 
 	vector<vector<double>> phi;
 
-	double sx = H / 2.0;
-	double sy = W / 2.0;
+	double sx = W / 2.0;
+	double sy = H / 2.0;
 	double r = 30;
 
 	vector<vector<vector<double>>> zahlushka;
 
 	сomputeDistantFunc(H, W, tauD, phi, zahlushka, sx, sy, r);
 
+	cout << "ditance end" << endl;
+
 	vector<vector<double>> uSigma(H, vector<double>(W, 0.0));
 
+
+	channel = dataOrigin[0]; 
 	vector<vector<double>> u0 = im.to2D(H, W, channel);
 
 	for (int i = 0; i < H; ++i) {
@@ -1876,6 +1880,8 @@ void ImageProcessing::segmentEdgeNormalMotion(ImageData& im, int N, vector<vecto
 		}
 	}
 
+	cout << "uSigma end" << endl;
+
 	int Hx = H + 2;
 	int Wx = W + 2;
 	vector<vector<double>> uSigmaBig(Hx, vector<double>(Wx, 0.0));
@@ -1924,5 +1930,80 @@ void ImageProcessing::segmentEdgeNormalMotion(ImageData& im, int N, vector<vecto
 		}
 	}
 
+	cout << "evolve start" << endl;
 
+	vector<vector<double>> phiNew(H, vector<double>(W, 0.0));
+
+	double isoTol = 3.0;
+
+	for (int n = 0; n < N; ++n) {
+
+		phiNew = phi; 
+
+		double Dmx, Dpx, Dpy, Dmy;
+
+		for (int i = 0; i < H; ++i) {
+			for (int j = 0; j < W; ++j) {
+
+				if (j > 0)
+					Dmx = (phi[i][j] - phi[i][j - 1]) / h;
+				else
+					Dmx = 0;
+
+				if (j < W - 1)
+					Dpx = (phi[i][j + 1] - phi[i][j]) / h;
+				else
+					Dpx = 0;
+
+				if (i > 0)
+					Dpy = (phi[i - 1][j] - phi[i][j]) / h;
+				else
+					Dpy = 0;
+
+				if (i < H - 1)
+					Dmy = (phi[i][j] - phi[i + 1][j]) / h;
+				else
+					Dmy = 0;
+
+				double maxDmx = max(Dmx, 0.0);
+				double minDpx = min(Dpx, 0.0);
+				double maxDmy = max(Dmy, 0.0);
+				double minDpy = min(Dpy, 0.0);
+
+				double gradPhi = sqrt(maxDmx * maxDmx + minDpx * minDpx + maxDmy * maxDmy + minDpy * minDpy);
+
+				phiNew[i][j] = phi[i][j] - tau * g[i][j] * gradPhi;
+			}
+		}
+
+		phi = phiNew;
+
+		for (int i = 0; i < H; ++i) {
+			for (int j = 0; j < W; ++j) {
+				int idx = i * W + j;
+				double bg = u0[i][j] * 255.0;
+
+				bool onIso = false;
+				double c0 = phi[i][j];
+
+				if (j > 0 && c0 * phi[i][j - 1] < 0.0) onIso = true;
+				if (j < W - 1 && c0 * phi[i][j + 1] < 0.0) onIso = true;
+				if (i > 0 && c0 * phi[i - 1][j] < 0.0) onIso = true;
+				if (i < H - 1 && c0 * phi[i + 1][j] < 0.0) onIso = true;
+				if (c0 == 0.0) onIso = true;  
+
+				if (onIso) {
+					history[n][0][idx] = 255.0;   // R
+					history[n][1][idx] = 0.0;     // G
+					history[n][2][idx] = 0.0;     // B
+				}
+				else {
+					history[n][0][idx] = bg;
+					history[n][1][idx] = bg;
+					history[n][2][idx] = bg;
+				}
+			}
+		}
+
+	}
 }

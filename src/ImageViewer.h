@@ -38,6 +38,9 @@ private:
 	vector<vector<vector<double>>> history = vector<vector<vector<double>>>{};
 
 	QImage phiToGrayscale(const vector<vector<double>>& phi);
+
+	void showSegFrame(int k);
+	bool segMode = false;
 private slots:
 	void on_actionOpen_triggered();
 	void on_actionSave_as_triggered();
@@ -50,4 +53,5 @@ private slots:
 	void on_pushButtonStopOnLast_clicked(); 
 	void on_spinBoxLinDifIters_valueChanged(int value);
 	void on_pushButtonDistanceFunc_clicked();
+	void on_pushButtonEdgeMotion_clicked();
 };
