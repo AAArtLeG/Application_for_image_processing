@@ -1132,14 +1132,14 @@ void ImageProcessing::GMCF(ImageData& im, int N, vector<vector<vector<double>>>&
 
 	double tau = Tau;
 	double sigma = 0.25;
-	double K = 200.0;
+	double K = 500.0;
 	int h = 1;
 
 	history.assign(N, vector<vector<double>>(channelSize, vector<double>(H * W, 0.0)));
 
-	double tol = 1e-4;
-	int    maxIter = 100;
-	double omega = 1.3;
+	double tol = 1e-6;
+	int    maxIter = 10000;
+	double omega = 1.9;
 
 	double c = tau / (h * h);
 	double cSigma = sigma / (h * h);
@@ -1382,6 +1382,8 @@ void ImageProcessing::GMCF(ImageData& im, int N, vector<vector<vector<double>>>&
 
 						c *= gradAvg;
 
+						
+
 						if (j + 1 > W - 1) { // 2
 							if (i - 1 < 0) { // 5
 								double diag = 1.0 + c * (vagS + vagW);
@@ -1610,7 +1612,10 @@ void ImageProcessing::GMCF(ImageData& im, int N, vector<vector<vector<double>>>&
 				}
 
 				double residual = sqrt(residualSq);
-				if (residual < tol) break;
+				if (residual < tol) {
+					cout << residual << " " << iter << endl;
+					break;
+				}
 			}
 
 			next = curr;
@@ -1653,4 +1658,148 @@ bool saveToPgm(const std::string& filename, int width, int height, const std::ve
 	}
 	f.close();
 	return true;
+}
+
+void ImageProcessing::сomputeDistantFunc(int H, int W, double tauD, vector<vector<double>>& phi, vector<vector<vector<double>>>& history, double Sx, double Sy, double r) {
+	double tolForCirle = 0.5;
+	double tol = 1e-4;
+
+	vector<vector<double>> d(H, vector<double>(W, 0.0));
+	vector<vector<bool>> F(H, vector<bool>(W, false));
+
+
+	double n = H * W;
+	int sizeF = 0;
+
+	int maxIter = 10000;
+
+	double h = 1.0;
+
+	for (int i = 0; i < H; ++i) {
+        for (int j = 0; j < W; ++j) {
+            double val = (i - Sx) * (i - Sx) + (j - Sy) * (j - Sy) - r * r;
+            if (abs(val) <= tolForCirle) {
+                d[i][j] = 0.0;
+                F[i][j] = true;
+                sizeF++;
+            }
+        }
+    }
+
+	history.clear();
+	history.push_back(d);
+
+	vector<vector<double>> dNew(H, vector<double>(W, 0.0));
+
+	for (int k = 0; k < maxIter; k++) {
+
+		
+
+		double Dmx, Dpx, Dpy, Dmy;
+
+		for (int i = 0; i < H; ++i) {
+			for (int j = 0; j < W; ++j) {
+				if (F[i][j]) 
+					continue;		
+
+				if (j > 0)
+					Dmx = (d[i][j] - d[i][j - 1]) / h;
+				else
+					Dmx = 0;
+
+				if (j < W - 1)
+					Dpx = (d[i][j + 1] - d[i][j]) / h;
+				else
+					Dpx = 0;
+
+				if (i > 0)
+					Dpy = (d[i - 1][j] - d[i][j]) / h;
+				else
+					Dpy = 0;
+
+				if (i < H - 1)
+					Dmy = (d[i][j] - d[i + 1][j]) / h;
+				else
+					Dmy = 0;
+
+				double maxDmx = max(Dmx, 0.0);
+				double maxDmy = max(Dmy, 0.0);
+				double minDpx = min(Dpx, 0.0);
+				double minDpy = min(Dpy, 0.0);
+
+				double deltaD = sqrt(maxDmx * maxDmx + maxDmy * maxDmy + minDpx * minDpx + minDpy * minDpy);
+
+				dNew[i][j] = d[i][j] - tauD * (deltaD - 1);
+
+				if (abs(dNew[i][j] - d[i][j]) < tol) {
+					F[i][j] = true;
+					sizeF++;
+				}
+			}
+		}
+
+		d = dNew;
+		history.push_back(d);
+
+		if (sizeF == n) {
+			cout << "Distance function converged at iter " << k << "\n";
+			break;
+		}
+
+		if (k == maxIter - 1) {
+			cout << "WARNING: Distance function did NOT converge in " << maxIter << " iterations. Stabilized: " << sizeF << "/" << n << "\n";
+		}
+	}
+
+	phi.assign(H, vector<double>(W, 0.0));
+
+	for (int i = 0; i < H; ++i) {
+		for (int j = 0; j < W; ++j) {
+			double val = (i - Sx) * (i - Sx) + (j - Sy) * (j - Sy) - r * r;
+			if (val < -tolForCirle) {
+				phi[i][j] = -d[i][j];
+			}
+			else if (val > tolForCirle) {
+				phi[i][j] = d[i][j];
+			}
+			else {
+				phi[i][j] = 0.0;
+			}
+		}
+	}
+}
+
+void ImageProcessing::segmentEdgeNormalMotion(ImageData& im, int N, vector<vector<vector<double>>>& history, double tau) {
+	vector<vector<double>> dataOrigin = im.getData();
+	int channelSize = dataOrigin.size();
+	int H = im.getHeight();
+	int W = im.getWidth();
+
+	vector<double> channel;
+	vector<vector<double>> finalChanPgm;
+	vector<double> finalChanPgm1D;
+
+	//double tau = Tau;
+	double sigma = 0.25;
+	double K = 500.0;
+	int h = 1;
+
+	history.assign(N, vector<vector<double>>(channelSize, vector<double>(H * W, 0.0)));
+
+	double tol = 1e-6;
+	int    maxIter = 10000;
+	double omega = 1.9;
+
+	double c = tau / (h * h);
+	double cSigma = sigma / (h * h);
+
+	double tauD = 0.4;
+
+	vector<vector<double>> phi;
+
+	double sx = 0;
+	double sy = 0;
+	double r = 7;
+
+	сomputeDistantFunc(H, W, tauD, phi, history, sx, sy, r);
 }

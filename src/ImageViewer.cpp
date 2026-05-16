@@ -305,3 +305,95 @@ void ImageViewer::on_spinBoxLinDifIters_valueChanged(int value)
 
 	vW->setImage(images[0].toQImageGray());
 }
+
+QImage ImageViewer::phiToGrayscale(const vector<vector<double>>& phi) {
+	int H = phi.size();
+	int W = phi[0].size();
+
+	// Найти min/max
+	double mn = phi[0][0], mx = phi[0][0];
+	for (int i = 0; i < H; ++i)
+		for (int j = 0; j < W; ++j) {
+			mn = min(mn, phi[i][j]);
+			mx = max(mx, phi[i][j]);
+		}
+
+	double range = mx - mn;
+	if (range < 1e-12) range = 1.0;
+
+	QImage img(W, H, QImage::Format_Grayscale8);
+	for (int i = 0; i < H; ++i)
+		for (int j = 0; j < W; ++j) {
+			int g = (int)(255.0 * (phi[i][j] - mn) / range);
+			img.setPixel(j, i, qRgb(g, g, g));
+		}
+
+	cout << "WW" << endl;
+
+	return img;
+}
+
+void ImageViewer::on_pushButtonDistanceFunc_clicked() {
+	bool ok;
+
+	double Sx = QInputDialog::getDouble(this, "Distance", "Sx:", 50, 0, 10000, 2, &ok);
+	if (!ok) return;
+	double Sy = QInputDialog::getDouble(this, "Distance", "Sy:", 50, 0, 10000, 2, &ok);
+	if (!ok) return;
+	double r = QInputDialog::getDouble(this, "Distance", "r:", 10, 0.1, 10000, 2, &ok);
+	if (!ok) return;
+	double tauD = QInputDialog::getDouble(this, "Distance", "tauD:", 0.25, 0, 0.5, 3, &ok);
+	if (!ok) return;
+
+	int H = images[0].getHeight();
+	int W = images[0].getWidth();
+
+	vector<vector<double>> phi;
+	history.clear();
+
+	ip.сomputeDistantFunc(H, W, tauD, phi, history, Sx, Sy, r);
+
+
+	double maxNeg = 0.0;   
+	double maxPos = 0.0; 
+	for (int i = 0; i < H; ++i)
+		for (int j = 0; j < W; ++j) {
+			if (phi[i][j] < 0 && -phi[i][j] > maxNeg) maxNeg = -phi[i][j];
+			if (phi[i][j] > 0 && phi[i][j] > maxPos) maxPos = phi[i][j];
+		}
+	if (maxNeg < 1e-12) maxNeg = 1.0;
+	if (maxPos < 1e-12) maxPos = 1.0;
+
+	QImage out(W, H, QImage::Format_RGB888);
+	for (int i = 0; i < H; ++i) {
+		for (int j = 0; j < W; ++j) {
+
+			double v = phi[i][j];
+			int R, G, B;
+
+			if (v < -0.5) {
+				int t = (int)(255.0 * (-v) / maxNeg);
+				if (t > 255) t = 255;
+				R = 0;
+				G = 0;
+				B = 255 - t / 2;          
+			}
+			else if (v > 0.5) {
+				int t = (int)(255.0 * v / maxPos);
+				if (t > 255) t = 255;
+				R = t;
+				G = 255 - t;
+				B = 0;
+			}
+			else {
+				R = 255;
+				G = 255;
+				B = 255;
+			}
+
+			out.setPixel(j, i, qRgb(R, G, B));   
+		}
+	}
+
+	vW->setImage(out);
+}

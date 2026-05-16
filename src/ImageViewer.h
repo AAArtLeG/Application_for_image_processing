@@ -36,6 +36,8 @@ private:
 	int numOfItersForLinDif = 0;
 	int curIterOfLinDif = 0;
 	vector<vector<vector<double>>> history = vector<vector<vector<double>>>{};
+
+	QImage phiToGrayscale(const vector<vector<double>>& phi);
 private slots:
 	void on_actionOpen_triggered();
 	void on_actionSave_as_triggered();
@@ -47,4 +49,5 @@ private slots:
 	void on_pushButtonSelectCur_clicked();
 	void on_pushButtonStopOnLast_clicked(); 
 	void on_spinBoxLinDifIters_valueChanged(int value);
+	void on_pushButtonDistanceFunc_clicked();
 };

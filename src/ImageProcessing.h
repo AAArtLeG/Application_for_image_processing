@@ -62,4 +62,8 @@ public:
 	void linDiffusionImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history, double Tau);
 	void nonLinPeronaMalikSemiImplicit(ImageData& im, int N, vector<vector<vector<double>>>& history, double Tau);
 	void GMCF(ImageData& im, int N, vector<vector<vector<double>>>& history, double Tau);
+
+	void сomputeDistantFunc(int H, int W, double tauD, vector<vector<double>>& phi, vector<vector<vector<double>>>& history, double Sx, double Sy, double r);
+
+	void segmentEdgeNormalMotion(ImageData& im, int N, vector<vector<vector<double>>>& history, double tau);
 };
