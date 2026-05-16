@@ -1797,9 +1797,132 @@ void ImageProcessing::segmentEdgeNormalMotion(ImageData& im, int N, vector<vecto
 
 	vector<vector<double>> phi;
 
-	double sx = 0;
-	double sy = 0;
-	double r = 7;
+	double sx = H / 2.0;
+	double sy = W / 2.0;
+	double r = 30;
 
-	сomputeDistantFunc(H, W, tauD, phi, history, sx, sy, r);
+	vector<vector<vector<double>>> zahlushka;
+
+	сomputeDistantFunc(H, W, tauD, phi, zahlushka, sx, sy, r);
+
+	vector<vector<double>> uSigma(H, vector<double>(W, 0.0));
+
+	vector<vector<double>> u0 = im.to2D(H, W, channel);
+
+	for (int i = 0; i < H; ++i) {
+		for (int j = 0; j < W; ++j) {
+
+			if (j + 1 > W - 1) { //2
+				if (i - 1 < 0) { //5
+					uSigma[i][j] = (1 - ((2 * sigma) / (h * h))) * u0[i][j];
+					uSigma[i][j] += cSigma * u0[i][j - 1] + cSigma * u0[i + 1][j];
+					continue;
+				}
+				if (i + 1 > H - 1) { //6
+					uSigma[i][j] = (1 - ((2 * sigma) / (h * h))) * u0[i][j];
+					uSigma[i][j] += cSigma * u0[i][j - 1] + cSigma * u0[i - 1][j];
+					continue;
+				}
+				uSigma[i][j] = (1 - ((3 * sigma) / (h * h))) * u0[i][j];
+				uSigma[i][j] += cSigma * u0[i][j - 1] + cSigma * u0[i + 1][j] + cSigma * u0[i - 1][j];
+				continue;
+			}
+			if (i - 1 < 0) { // 1
+				if (j + 1 > W - 1) { // 5
+					uSigma[i][j] = (1 - ((2 * sigma) / (h * h))) * u0[i][j];
+					uSigma[i][j] += cSigma * u0[i][j - 1] + cSigma * u0[i + 1][j];
+					continue;
+				}
+				if (j - 1 < 0) { //8
+					uSigma[i][j] = (1 - ((2 * sigma) / (h * h))) * u0[i][j];
+					uSigma[i][j] += cSigma * u0[i][j + 1] + cSigma * u0[i + 1][j];
+					continue;
+				}
+				uSigma[i][j] = (1 - ((3 * sigma) / (h * h))) * u0[i][j];
+				uSigma[i][j] += cSigma * u0[i][j - 1] + cSigma * u0[i + 1][j] + cSigma * u0[i][j + 1];
+				continue;
+			}
+			if (j - 1 < 0) { //4
+				if (i - 1 < 0) { //8
+					uSigma[i][j] = (1 - ((2 * sigma) / (h * h))) * u0[i][j];
+					uSigma[i][j] += cSigma * u0[i][j + 1] + cSigma * u0[i + 1][j];
+					continue;
+				}
+				if (i + 1 > H - 1) { //7
+					uSigma[i][j] = (1 - ((2 * sigma) / (h * h))) * u0[i][j];
+					uSigma[i][j] += cSigma * u0[i][j + 1] + cSigma * u0[i - 1][j];
+					continue;
+				}
+				uSigma[i][j] = (1 - ((3 * sigma) / (h * h))) * u0[i][j];
+				uSigma[i][j] += cSigma * u0[i - 1][j] + cSigma * u0[i + 1][j] + cSigma * u0[i][j + 1];
+				continue;
+			}
+			if (i + 1 > H - 1) { // 3
+				if (j - 1 < 0) { // 7
+					uSigma[i][j] = (1 - ((2 * sigma) / (h * h))) * u0[i][j];
+					uSigma[i][j] += cSigma * u0[i][j + 1] + cSigma * u0[i - 1][j];
+					continue;
+				}
+				if (j + 1 > W - 1) { //6
+					uSigma[i][j] = (1 - ((2 * sigma) / (h * h))) * u0[i][j];
+					uSigma[i][j] += cSigma * u0[i][j - 1] + cSigma * u0[i - 1][j];
+					continue;
+				}
+				uSigma[i][j] = (1 - ((3 * sigma) / (h * h))) * u0[i][j];
+				uSigma[i][j] += cSigma * u0[i][j + 1] + cSigma * u0[i - 1][j] + cSigma * u0[i][j - 1];
+				continue;
+			}
+			uSigma[i][j] = (1 - ((4 * sigma) / (h * h))) * u0[i][j] + cSigma * u0[i][j - 1] + cSigma * u0[i + 1][j] + cSigma * u0[i][j + 1] + cSigma * u0[i - 1][j];
+		}
+	}
+
+	int Hx = H + 2;
+	int Wx = W + 2;
+	vector<vector<double>> uSigmaBig(Hx, vector<double>(Wx, 0.0));
+
+	for (int i = 0; i < H; ++i) { //inner
+		for (int j = 0; j < W; ++j) {
+			uSigmaBig[i + 1][j + 1] = uSigma[i][j];
+		}
+	}
+	for (int j = 0; j < W; ++j) { //bot and top
+		uSigmaBig[0][j + 1] = uSigma[0][j];
+		uSigmaBig[Hx - 1][j + 1] = uSigma[H - 1][j];
+	}
+	for (int i = 0; i < H; ++i) { // left and right
+		uSigmaBig[i + 1][0] = uSigma[i][0];
+		uSigmaBig[i + 1][Wx - 1] = uSigma[i][W - 1];
+	}
+
+	uSigmaBig[0][0] = uSigma[0][0];
+	uSigmaBig[0][Wx - 1] = uSigma[0][W - 1];
+	uSigmaBig[Hx - 1][0] = uSigma[H - 1][0];
+	uSigmaBig[Hx - 1][Wx - 1] = uSigma[H - 1][W - 1];
+
+	vector<vector<double>> g(H, vector<double>(W, 0.0));
+
+	for (int i = 0; i < H; ++i) {
+		for (int j = 0; j < W; ++j) {
+
+			int ii = i + 1;
+			int jj = j + 1;
+
+			double up = uSigmaBig[ii][jj];
+			double uN = uSigmaBig[ii - 1][jj];
+			double uS = uSigmaBig[ii + 1][jj];
+			double uW = uSigmaBig[ii][jj - 1];
+			double uE = uSigmaBig[ii][jj + 1];
+			double uNE = uSigmaBig[ii - 1][jj + 1];
+			double uNW = uSigmaBig[ii - 1][jj - 1];
+			double uSE = uSigmaBig[ii + 1][jj + 1];
+			double uSW = uSigmaBig[ii + 1][jj - 1];
+
+			double gradUSigma0 = ((uN - uS) / (2 * h)) * (uN - uS) / (2 * h) + ((uE - uW) / (2 * h)) * (uE - uW) / (2 * h);
+
+			g[i][j] = 1.0 / (1.0 + K * gradUSigma0);
+
+		}
+	}
+
+
 }
