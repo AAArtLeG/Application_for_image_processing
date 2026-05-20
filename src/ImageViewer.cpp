@@ -478,3 +478,49 @@ void ImageViewer::on_pushButtonEdgeMotion_clicked() {
 	win->resize(W, H + 40);
 	win->show();
 }
+
+void ImageViewer::on_pushButtonGAC_clicked() {
+
+	double tau = 0.5;
+	int    N = 400;
+	double cBalloon = 1.0;  
+
+	ip.GAC(images[0], N, history, tau, cBalloon);
+
+	int H = images[0].getHeight();
+	int W = images[0].getWidth();
+
+	QWidget* win = new QWidget(nullptr);
+	win->setWindowTitle("GAC result");
+	QVBoxLayout* lay = new QVBoxLayout(win);
+	QLabel* imgLabel = new QLabel(win);
+	QSpinBox* sb = new QSpinBox(win);
+	sb->setRange(0, N - 1);
+	sb->setValue(N - 1);
+	lay->addWidget(imgLabel);
+	lay->addWidget(sb);
+
+	auto drawFrame = [imgLabel, H, W, this](int idx) {
+		if (idx < 0 || idx >= (int)history.size()) return;
+		QImage out(W, H, QImage::Format_RGB888);
+		for (int i = 0; i < H; ++i)
+			for (int j = 0; j < W; ++j) {
+				int p = i * W + j;
+				int R = (int)history[idx][0][p];
+				int G = (int)history[idx][1][p];
+				int B = (int)history[idx][2][p];
+				if (R < 0)R = 0; if (R > 255)R = 255;
+				if (G < 0)G = 0; if (G > 255)G = 255;
+				if (B < 0)B = 0; if (B > 255)B = 255;
+				out.setPixel(j, i, qRgb(R, G, B));
+			}
+		imgLabel->setPixmap(QPixmap::fromImage(out));
+		};
+
+	QObject::connect(sb, QOverload<int>::of(&QSpinBox::valueChanged),
+		win, [drawFrame](int v) { drawFrame(v); });
+
+	drawFrame(N - 1);
+	win->resize(W, H + 40);
+	win->show();
+}

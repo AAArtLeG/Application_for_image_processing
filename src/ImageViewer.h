@@ -54,4 +54,5 @@ private slots:
 	void on_spinBoxLinDifIters_valueChanged(int value);
 	void on_pushButtonDistanceFunc_clicked();
 	void on_pushButtonEdgeMotion_clicked();
+	void on_pushButtonGAC_clicked();
 };
