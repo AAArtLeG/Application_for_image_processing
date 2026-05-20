@@ -2174,8 +2174,6 @@ void ImageProcessing::GAC(ImageData& im, int N, vector<vector<vector<double>>>& 
 	vector<vector<double>> prev = phi;   // phi^{n-1}
 
 	for (int n = 0; n < N; n++) {
-
-		// --- |∇phi^{n-1}|_eps на гранях (из prev=phi) ---
 		vector<vector<double>> prevBig(Hx, vector<double>(Wx, 0.0));
 		for (int i = 0; i < H; ++i)
 			for (int j = 0; j < W; ++j)

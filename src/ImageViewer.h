@@ -49,6 +49,7 @@ private slots:
 	void on_pushButtonCon_clicked(); 
 	void on_pushButtonLinDif_clicked();
 	void on_pushButtonPeronMalik_clicked();
+	void on_pushButtonGMFC_clicked();
 	void on_pushButtonSelectCur_clicked();
 	void on_pushButtonStopOnLast_clicked(); 
 	void on_spinBoxLinDifIters_valueChanged(int value);

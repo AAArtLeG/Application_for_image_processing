@@ -253,6 +253,62 @@ void ImageViewer::on_pushButtonPeronMalik_clicked() {
 
 	ui->spinBoxLinDifIters->setRange(0, numOfItersForLinDif - 1);
 
+	ip.nonLinPeronaMalikSemiImplicit(images[0], numOfItersForLinDif, history, tau);
+	//ip.GMCF(images[0], numOfItersForLinDif, history, tau);
+
+	ui->spinBoxLinDifIters->setValue(numOfItersForLinDif - 1);
+
+	images[0].setData(history[numOfItersForLinDif - 1]);
+	vW->setImage(images[0].toQImageGray());
+
+	ui->spinBoxLinDifIters->setEnabled(true);
+	ui->pushButtonSelectCur->setEnabled(true);
+	ui->pushButtonStopOnLast->setEnabled(true);
+}
+
+void ImageViewer::on_pushButtonGMFC_clicked() {
+	bool ok;
+
+	double tau = QInputDialog::getDouble(
+		this,
+		"Input",
+		"Enter tau:",
+		0.2,    // value by default
+		0.0,    // min
+		1000.0, // max
+		2,      // decimals
+		&ok
+	);
+
+	if (ok) {
+		qDebug() << "Entered tau:" << tau;
+	}
+	else {
+		qDebug() << "Cancelled";
+		return;
+	}
+
+	numOfItersForLinDif = QInputDialog::getInt(
+		this,
+		"Input",
+		"Enter a number:",
+		1,      // value by default
+		1,      // min
+		1000,   // max
+		1,      // step
+		&ok
+	);
+
+	if (ok) {
+		qDebug() << "Entered value:" << numOfItersForLinDif;
+	}
+	else {
+		qDebug() << "Cancelled";
+		return;
+	}
+
+	ui->spinBoxLinDifIters->setRange(0, numOfItersForLinDif - 1);
+
 	//ip.nonLinPeronaMalikSemiImplicit(images[0], numOfItersForLinDif, history, tau);
 	ip.GMCF(images[0], numOfItersForLinDif, history, tau);
 
@@ -266,10 +322,31 @@ void ImageViewer::on_pushButtonPeronMalik_clicked() {
 	ui->pushButtonStopOnLast->setEnabled(true);
 }
 
-void ImageViewer::on_pushButtonSelectCur_clicked() {
-	images[0].setData(history[curIterOfLinDif]);
+//void ImageViewer::on_pushButtonSelectCur_clicked() {
+//	images[0].setData(history[curIterOfLinDif]);
+//
+//	vW->setImage(images[0].toQImageGray());
+//
+//	numOfItersForLinDif = 0;
+//	curIterOfLinDif = 0;
+//	ui->spinBoxLinDifIters->blockSignals(true);
+//	ui->spinBoxLinDifIters->setRange(0, 0);
+//	ui->spinBoxLinDifIters->blockSignals(false);
+//	ui->spinBoxLinDifIters->setEnabled(false);
+//	ui->pushButtonSelectCur->setEnabled(false);
+//	ui->pushButtonStopOnLast->setEnabled(false);
+//}
 
-	vW->setImage(images[0].toQImageGray());
+void ImageViewer::on_pushButtonSelectCur_clicked() {
+
+	if (segMode) {
+		showSegFrame(curIterOfLinDif);
+		segMode = false;
+	}
+	else {
+		images[0].setData(history[curIterOfLinDif]);
+		vW->setImage(images[0].toQImageGray());
+	}
 
 	numOfItersForLinDif = 0;
 	curIterOfLinDif = 0;
@@ -280,11 +357,32 @@ void ImageViewer::on_pushButtonSelectCur_clicked() {
 	ui->pushButtonSelectCur->setEnabled(false);
 	ui->pushButtonStopOnLast->setEnabled(false);
 }
+
+//void ImageViewer::on_pushButtonStopOnLast_clicked() {
+//	images[0].setData(history[numOfItersForLinDif - 1]);
+//
+//	vW->setImage(images[0].toQImageGray());
+//
+//	numOfItersForLinDif = 0;
+//	curIterOfLinDif = 0;
+//	ui->spinBoxLinDifIters->blockSignals(true);
+//	ui->spinBoxLinDifIters->setRange(0, 0);
+//	ui->spinBoxLinDifIters->blockSignals(false);
+//	ui->spinBoxLinDifIters->setEnabled(false);
+//	ui->pushButtonSelectCur->setEnabled(false);
+//	ui->pushButtonStopOnLast->setEnabled(false);
+//}
 
 void ImageViewer::on_pushButtonStopOnLast_clicked() {
-	images[0].setData(history[numOfItersForLinDif - 1]);
 
-	vW->setImage(images[0].toQImageGray());
+	if (segMode) {
+		showSegFrame((int)history.size() - 1);
+		segMode = false;
+	}
+	else {
+		images[0].setData(history[numOfItersForLinDif - 1]);
+		vW->setImage(images[0].toQImageGray());
+	}
 
 	numOfItersForLinDif = 0;
 	curIterOfLinDif = 0;
@@ -296,14 +394,27 @@ void ImageViewer::on_pushButtonStopOnLast_clicked() {
 	ui->pushButtonStopOnLast->setEnabled(false);
 }
 
-void ImageViewer::on_spinBoxLinDifIters_valueChanged(int value)
-{
+//void ImageViewer::on_spinBoxLinDifIters_valueChanged(int value)
+//{
+//	qDebug() << value;
+//	curIterOfLinDif = value;
+//
+//	images[0].setData(history[curIterOfLinDif]);
+//
+//	vW->setImage(images[0].toQImageGray());
+//}
+
+void ImageViewer::on_spinBoxLinDifIters_valueChanged(int value) {
 	qDebug() << value;
 	curIterOfLinDif = value;
 
-	images[0].setData(history[curIterOfLinDif]);
-
-	vW->setImage(images[0].toQImageGray());
+	if (segMode) {
+		showSegFrame(curIterOfLinDif);
+	}
+	else {
+		images[0].setData(history[curIterOfLinDif]);
+		vW->setImage(images[0].toQImageGray());
+	}
 }
 
 QImage ImageViewer::phiToGrayscale(const vector<vector<double>>& phi) {
@@ -428,6 +539,29 @@ void ImageViewer::on_pushButtonDistanceFunc_clicked() {
 //	vW->setImage(out);
 //}
 
+void ImageViewer::showSegFrame(int k) {
+	if (history.empty() || k < 0 || k >= (int)history.size()) return;
+
+	int H = images[0].getHeight();
+	int W = images[0].getWidth();
+
+	QImage out(W, H, QImage::Format_RGB888);
+	for (int i = 0; i < H; ++i) {
+		for (int j = 0; j < W; ++j) {
+			int p = i * W + j;
+			int R = (int)history[k][0][p];
+			int G = (int)history[k][1][p];
+			int B = (int)history[k][2][p];
+			if (R < 0) R = 0; if (R > 255) R = 255;
+			if (G < 0) G = 0; if (G > 255) G = 255;
+			if (B < 0) B = 0; if (B > 255) B = 255;
+			out.setPixel(j, i, qRgb(R, G, B));
+		}
+	}
+
+	vW->setImage(out);
+}
+
 void ImageViewer::on_pushButtonEdgeMotion_clicked() {
 
 	double tau = 0.5;
@@ -435,92 +569,43 @@ void ImageViewer::on_pushButtonEdgeMotion_clicked() {
 
 	ip.segmentEdgeNormalMotion(images[0], N, history, tau);
 
-	int H = images[0].getHeight();
-	int W = images[0].getWidth();
+	segMode = true;
 
-	// окно
-	QWidget* win = new QWidget(nullptr);
-	win->setWindowTitle("Edge motion result");
-	QVBoxLayout* lay = new QVBoxLayout(win);
+	ui->spinBoxLinDifIters->blockSignals(true);
+	ui->spinBoxLinDifIters->setRange(0, N - 1);
+	ui->spinBoxLinDifIters->setValue(N - 1);
+	ui->spinBoxLinDifIters->blockSignals(false);
 
-	QLabel* imgLabel = new QLabel(win);
-	QSpinBox* sb = new QSpinBox(win);
-	sb->setRange(0, N - 1);
-	sb->setValue(N - 1);
+	showSegFrame(N - 1);
 
-	lay->addWidget(imgLabel);
-	lay->addWidget(sb);
-
-	// захват по значению: history, размеры
-	auto drawFrame = [imgLabel, H, W, this](int idx) {
-		if (idx < 0 || idx >= (int)history.size()) return;
-		QImage out(W, H, QImage::Format_RGB888);
-		for (int i = 0; i < H; ++i) {
-			for (int j = 0; j < W; ++j) {
-				int p = i * W + j;
-				int R = (int)history[idx][0][p];
-				int G = (int)history[idx][1][p];
-				int B = (int)history[idx][2][p];
-				if (R < 0) R = 0; if (R > 255) R = 255;
-				if (G < 0) G = 0; if (G > 255) G = 255;
-				if (B < 0) B = 0; if (B > 255) B = 255;
-				out.setPixel(j, i, qRgb(R, G, B));
-			}
-		}
-		imgLabel->setPixmap(QPixmap::fromImage(out));
-		};
-
-	QObject::connect(sb, QOverload<int>::of(&QSpinBox::valueChanged),
-		win, [drawFrame](int v) { drawFrame(v); });
-
-	drawFrame(N - 1);   // показать последний кадр сразу
-
-	win->resize(W, H + 40);
-	win->show();
+	ui->spinBoxLinDifIters->setEnabled(true);
+	ui->pushButtonSelectCur->setEnabled(true);
+	ui->pushButtonStopOnLast->setEnabled(true);
 }
 
 void ImageViewer::on_pushButtonGAC_clicked() {
 
 	double tau = 0.5;
 	int    N = 400;
-	double cBalloon = 1.0;  
+	double cBalloon = 1.0;
 
 	ip.GAC(images[0], N, history, tau, cBalloon);
 
-	int H = images[0].getHeight();
-	int W = images[0].getWidth();
+	segMode = true;
 
-	QWidget* win = new QWidget(nullptr);
-	win->setWindowTitle("GAC result");
-	QVBoxLayout* lay = new QVBoxLayout(win);
-	QLabel* imgLabel = new QLabel(win);
-	QSpinBox* sb = new QSpinBox(win);
-	sb->setRange(0, N - 1);
-	sb->setValue(N - 1);
-	lay->addWidget(imgLabel);
-	lay->addWidget(sb);
+	ui->spinBoxLinDifIters->blockSignals(true);
+	ui->spinBoxLinDifIters->setRange(0, N - 1);
+	ui->spinBoxLinDifIters->setValue(N - 1);
+	ui->spinBoxLinDifIters->blockSignals(false);
 
-	auto drawFrame = [imgLabel, H, W, this](int idx) {
-		if (idx < 0 || idx >= (int)history.size()) return;
-		QImage out(W, H, QImage::Format_RGB888);
-		for (int i = 0; i < H; ++i)
-			for (int j = 0; j < W; ++j) {
-				int p = i * W + j;
-				int R = (int)history[idx][0][p];
-				int G = (int)history[idx][1][p];
-				int B = (int)history[idx][2][p];
-				if (R < 0)R = 0; if (R > 255)R = 255;
-				if (G < 0)G = 0; if (G > 255)G = 255;
-				if (B < 0)B = 0; if (B > 255)B = 255;
-				out.setPixel(j, i, qRgb(R, G, B));
-			}
-		imgLabel->setPixmap(QPixmap::fromImage(out));
-		};
+	showSegFrame(N - 1);
 
-	QObject::connect(sb, QOverload<int>::of(&QSpinBox::valueChanged),
-		win, [drawFrame](int v) { drawFrame(v); });
-
-	drawFrame(N - 1);
-	win->resize(W, H + 40);
-	win->show();
+	ui->spinBoxLinDifIters->setEnabled(true);
+	ui->pushButtonSelectCur->setEnabled(true);
+	ui->pushButtonStopOnLast->setEnabled(true);
 }
+
+
+
+
+
